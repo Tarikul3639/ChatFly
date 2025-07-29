@@ -11,17 +11,16 @@ import {
   CardContent,
   CardDescription,
   CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import {
   BotMessageSquare,
   Users,
   GraduationCap,
-  Eye,
-  LockKeyhole,
-  Mail,
-  EyeOff,
   Sparkles,
+  AtSign,
+  Eye,
+  EyeOff,
+  Lock,
 } from "lucide-react";
 
 const SOCIALS = [
@@ -54,11 +53,7 @@ const SOCIALS = [
   {
     label: "Facebook",
     icon: (
-      <svg
-        className="w-4 h-4 mr-2"
-        fill="currentColor"
-        viewBox="0 0 24 24"
-      >
+      <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24">
         <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
       </svg>
     ),
@@ -68,53 +63,61 @@ const SOCIALS = [
   },
 ];
 
-const LoginPage: React.FC = () => {
-  const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
-  const [showPassword, setShowPassword] = useState<boolean>(false);
+export default function SignupPage() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [name, setName] = useState("");
   const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Simulate login - replace with actual authentication logic
-    localStorage.setItem("chatfly-user", JSON.stringify({ email }));
+    if (password !== confirmPassword) {
+      alert("Passwords do not match");
+      return;
+    }
+    // Simulate signup
+    localStorage.setItem("chatfly-user", JSON.stringify({ email, name }));
     router.push("/dashboard");
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex">
-      {/* Left Section */}
-      <aside className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-500 to-indigo-600 p-12 items-center justify-center rounded-tr-[10rem]">
-        <section className="text-center text-white max-w-md">
+      {/* Left Side - Image/Illustration */}
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-indigo-500 to-purple-600 sm:p-12 items-center justify-center rounded-tr-[10rem]">
+        <div className="text-center text-white max-w-md">
           <div className="w-20 h-20 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-8">
-            <BotMessageSquare className="w-10 h-10 text-white" />
+            <Sparkles className="w-10 h-10 text-white" />
           </div>
-          <h2 className="text-3xl font-bold mb-4">Welcome back to ChatFly</h2>
-          <p className="text-blue-100 text-lg">
-            Continue your learning journey with AI-powered classroom & chat conversations
+          <h2 className="text-3xl font-bold mb-4">Join ChatFly Today</h2>
+          <p className="text-indigo-100 text-lg mb-8">
+            Start your AI-powered learning journey with thousands of students
+            and teachers
           </p>
-          <div className="mt-8 space-y-4">
-            <div className="flex items-center space-x-3 text-blue-100">
+          <div className="space-y-4">
+            <div className="flex items-center space-x-3 text-indigo-100">
+              <BotMessageSquare className="w-5 h-5" />
+              <span>Smart messaging with AI suggestions</span>
+            </div>
+            <div className="flex items-center space-x-3 text-indigo-100">
               <Users className="w-5 h-5" />
-              <span>Connect with classmates</span>
+              <span>Collaborative classroom spaces</span>
             </div>
-            <div className="flex items-center space-x-3 text-blue-100">
+            <div className="flex items-center space-x-3 text-indigo-100">
               <GraduationCap className="w-5 h-5" />
-              <span>Enhanced learning experience</span>
-            </div>
-            <div className="flex items-center space-x-3 text-blue-100">
-              <Sparkles className="w-5 h-5" />
-              <span>Smart AI suggestions</span>
+              <span>Enhanced learning outcomes</span>
             </div>
           </div>
-        </section>
-      </aside>
+        </div>
+      </div>
 
-      {/* Right Section - Login Form */}
-      <main className="w-full lg:w-1/2 flex items-center justify-center p-2 sm:p-8">
+      {/* Right Side - Form */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-2 sm:p-8">
         <div className="w-full max-w-md">
-          <Card className="sm:shadow-md sm:border border-gray-200 pb-8">
-            <CardHeader>
+          <Card className="shadow-xl border-0">
+            <CardHeader className="space-y-1">
               <div className="text-center">
                 <Link
                   href="/"
@@ -127,20 +130,35 @@ const LoginPage: React.FC = () => {
                     ChatFly
                   </span>
                 </Link>
-                <h1 className="text-2xl font-bold text-gray-900">
-                  Sign in to your account
-                </h1>
-                <p className="text-gray-600 mt-2">
-                  Welcome back! Please enter your details.
-                </p>
+                <CardDescription className="text-2xl font-bold text-gray-900">
+                  Create your account
+                </CardDescription>
+                <CardDescription className="text-gray-600 mt-2">
+                  Join the future of classroom communication
+                </CardDescription>
               </div>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-gray-600 text-sm">
-                    Email Address
-                  </Label>
+                  <Label htmlFor="name">Full Name</Label>
+                  <div className="relative">
+                    <Input
+                      id="name"
+                      type="text"
+                      placeholder="Enter your full name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      required
+                      className="h-11 px-10"
+                    />
+                    <div className="absolute inset-y-0 left-3 flex items-center">
+                      <Users className="w-4 h-4 text-gray-400" />
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email Address</Label>
                   <div className="relative">
                     <Input
                       id="email"
@@ -149,77 +167,95 @@ const LoginPage: React.FC = () => {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
-                      className="pl-10 h-11 focus-visible:ring-1 focus-visible:ring-blue-500 focus-visible:border-blue-500"
+                      className="h-11 px-10"
                     />
-                    <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Mail className="h-4 w-4 text-gray-400" />
-                    </span>
+                    <div className="absolute inset-y-0 left-3 flex items-center">
+                      <AtSign className="w-4 h-4 text-gray-400" />
+                    </div>
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="password" className="text-gray-600 text-sm">
-                    Password
-                  </Label>
+                  <Label htmlFor="password">Password</Label>
                   <div className="relative">
                     <Input
                       id="password"
                       type={showPassword ? "text" : "password"}
-                      placeholder="Enter your password"
+                      placeholder="Create a password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
-                      className="px-10 h-11 focus-visible:ring-1 focus-visible:ring-blue-500 focus-visible:border-blue-500"
+                      className="h-11 px-10"
                     />
-                    <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <LockKeyhole className="h-4 w-4 text-gray-400" />
-                    </span>
-                    <span className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer">
-                      {!showPassword ? (
-                        <Eye
-                          className="h-4 w-4 text-gray-400 hover:text-gray-500"
-                          onClick={() => setShowPassword(true)}
-                        />
+                    <div className="absolute inset-y-0 left-3 flex items-center">
+                      <Lock className="w-4 h-4 text-gray-400" />
+                    </div>
+                    <div
+                      className="absolute inset-y-0 right-3 flex items-center cursor-pointer"
+                      onClick={() => setShowPassword((prev) => !prev)}
+                      tabIndex={0}
+                      role="button"
+                      aria-label={
+                        showPassword ? "Hide password" : "Show password"
+                      }
+                    >
+                      {showPassword ? (
+                        <EyeOff className="w-4 h-4 text-gray-400" />
                       ) : (
-                        <EyeOff
-                          className="h-4 w-4 text-gray-400 hover:text-gray-500"
-                          onClick={() => setShowPassword(false)}
-                        />
+                        <Eye className="w-4 h-4 text-gray-400" />
                       )}
-                    </span>
+                    </div>
                   </div>
                 </div>
-                <div className="flex items-center justify-between">
-                  <Label className="flex items-center text-gray-600 text-sm">
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword">Confirm Password</Label>
+                  <div className="relative">
                     <Input
-                      id="reminder"
-                      type="checkbox"
-                      className="h-4 w-4 accent-blue-600"
+                      id="confirmPassword"
+                      type={showConfirmPassword ? "text" : "password"}
+                      placeholder="Confirm your password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      required
+                      className="h-11 px-10"
                     />
-                    <span className="ml-2">Remember Me</span>
-                  </Label>
-                  <Link
-                    href="/auth/forgot-password"
-                    className="text-blue-600 hover:text-blue-700 text-sm font-medium"
-                  >
-                    Forgot Password?
-                  </Link>
+                    <div className="absolute inset-y-0 left-3 flex items-center">
+                      <Lock className="w-4 h-4 text-gray-400" />
+                    </div>
+                    <div
+                      className="absolute inset-y-0 right-3 flex items-center cursor-pointer"
+                      onClick={() => setShowConfirmPassword((prev) => !prev)}
+                      tabIndex={0}
+                      role="button"
+                      aria-label={
+                        showConfirmPassword
+                          ? "Hide confirm password"
+                          : "Show confirm password"
+                      }
+                    >
+                      {showConfirmPassword ? (
+                        <EyeOff className="w-4 h-4 text-gray-400" />
+                      ) : (
+                        <Eye className="w-4 h-4 text-gray-400" />
+                      )}
+                    </div>
+                  </div>
                 </div>
                 <Button
                   type="submit"
                   className="w-full h-11 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700"
                 >
-                  Sign In
+                  Create Account
                 </Button>
               </form>
 
               <div className="mt-6 text-center">
                 <p className="text-sm text-gray-600">
-                  Don't have an account?{" "}
+                  Already have an account?{" "}
                   <Link
-                    href="/auth/signup"
+                    href="/auth/login"
                     className="text-blue-600 hover:text-blue-700 font-medium"
                   >
-                    Sign up
+                    Sign in
                   </Link>
                 </p>
               </div>
@@ -254,9 +290,7 @@ const LoginPage: React.FC = () => {
             </CardContent>
           </Card>
         </div>
-      </main>
+      </div>
     </div>
   );
-};
-
-export default LoginPage;
+}

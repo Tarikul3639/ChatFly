@@ -19,6 +19,11 @@
       "√ Would you like to use App Router? (recommended) ... Yes",
       "√ Would you like to use Turbopack for `next dev`? ... Yes",
       "√ Would you like to customize the import alias (`@/*` by default)? ... No"
-    ]
+    ],
+    "lucide-react": "npm install lucide-react",
+    "shadcn/ui/button": "npx shadcn@latest add button",
+    "shadcn/ui/select": "npx shadcn@latest add select",
+    "shadcn/ui/label": "npx shadcn@latest add label",
+    "shadcn/ui/card": "npx shadcn@latest add card"
   }
 }
