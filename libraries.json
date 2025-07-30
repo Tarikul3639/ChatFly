@@ -24,6 +24,10 @@
     "shadcn/ui/button": "npx shadcn@latest add button",
     "shadcn/ui/select": "npx shadcn@latest add select",
     "shadcn/ui/label": "npx shadcn@latest add label",
-    "shadcn/ui/card": "npx shadcn@latest add card"
+    "shadcn/ui/card": "npx shadcn@latest add card",
+    "shadcn/ui/Badge": "npx shadcn@latest add badge",
+    "shadcn/ui/Avatar": "npx shadcn@latest add avatar",
+    "shadcn/ui/separator": "npx shadcn@latest add separator",
+    "shadcn/ui/textarea": "npx shadcn@latest add textarea"
   }
 }
