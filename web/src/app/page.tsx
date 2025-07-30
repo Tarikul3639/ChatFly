@@ -58,7 +58,7 @@ export default function LandingPage() {
                     <div className="bg-blue-500 text-white px-4 py-2 rounded-2xl rounded-bl-sm">Hey everyone! 👋</div>
                   </div>
                   <div className="flex items-center space-x-3 justify-end">
-                    <div className="bg-gray-100 px-4 py-2 rounded-2xl rounded-br-sm">Ready for today's lesson?</div>
+                    <div className="bg-gray-100 px-4 py-2 rounded-2xl rounded-br-sm">Ready for today&apos;s lesson?</div>
                     <div className="w-10 min-w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
                       <Users className="w-5 h-5 text-green-600" />
                     </div>
