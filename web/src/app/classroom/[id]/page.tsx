@@ -1,7 +1,6 @@
 "use client";
 
 import type React from "react";
-
 import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -54,6 +53,7 @@ export default function ClassroomPage() {
   const [user, setUser] = useState<User | null>(null);
   const [message, setMessage] = useState("");
   const [showAISuggestions, setShowAISuggestions] = useState(false);
+  const [timestamp, setTimestamp] = useState("");
   const [showChatSummary, setShowChatSummary] = useState(false);
   const [showMoreOptions, setShowMoreOptions] = useState<number | null>(null);
   const [messages, setMessages] = useState<Message[]>([
@@ -133,6 +133,7 @@ export default function ClassroomPage() {
     members: members.length,
   };
 
+  // Check if user is logged in
   useEffect(() => {
     // const userData = localStorage.getItem("chatfly-user")
     const userData = {
@@ -148,6 +149,7 @@ export default function ClassroomPage() {
     setUser(userData);
   }, [router]);
 
+  // Scroll to bottom when new messages are added
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -170,6 +172,16 @@ export default function ClassroomPage() {
     };
   }, [showMoreOptions]);
 
+  // Generate timestamp on client side
+  useEffect(() => {
+    const time = new Date().toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+    setTimestamp(time);
+  }, []);
+
   const handleSendMessage = () => {
     if (!message.trim()) return;
 
@@ -178,11 +190,7 @@ export default function ClassroomPage() {
       user: user?.name || "You",
       role: user?.role || "student",
       content: message,
-      timestamp: new Date().toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: true,
-      }),
+      timestamp: timestamp, // Use client-generated timestamp
       avatar:
         user?.name
           ?.split(" ")
@@ -193,6 +201,14 @@ export default function ClassroomPage() {
     setMessages([...messages, newMessage]);
     setMessage("");
     setShowAISuggestions(false);
+
+    // Optionally regenerate new timestamp for next message
+    const time = new Date().toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+    setTimestamp(time);
   };
 
   const handleAISuggestion = (suggestion: string) => {
@@ -230,7 +246,7 @@ export default function ClassroomPage() {
               <div className="relative">
                 <Avatar className="w-8 h-8">
                   <AvatarFallback
-                    className={`text-xs ${
+                    className={`text-xs font-semibold ${
                       member.role === "teacher"
                         ? "bg-purple-100 text-purple-600"
                         : "bg-blue-100 text-blue-600"
@@ -306,7 +322,7 @@ export default function ClassroomPage() {
                 {!isOwnMessage && (
                   <Avatar className="w-8 h-8 mt-1">
                     <AvatarFallback
-                      className={`text-xs ${
+                      className={`text-xs font-semibold ${
                         msg.role === "teacher"
                           ? "bg-purple-100 text-purple-600"
                           : "bg-blue-100 text-blue-600"
@@ -354,11 +370,9 @@ export default function ClassroomPage() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className={`absolute top-1/2 ${
-                        isOwnMessage ? "-left-12" : "-right-12"
-                      } -right-12 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity ${
-                        showMoreOptions === msg.id ? "opacity-100" : "opacity-0"
-                      }`}
+                      className={`absolute top-1/2 -translate-y-1/2 transition-opacity group-hover:opacity-100 
+                      ${isOwnMessage ? "left-[-3rem]" : "right-[-3rem]"} 
+                      ${showMoreOptions === msg.id ? "opacity-100" : "opacity-0"}`}
                       onClick={() =>
                         setShowMoreOptions(
                           showMoreOptions === msg.id ? null : msg.id
@@ -367,13 +381,13 @@ export default function ClassroomPage() {
                     >
                       <MoreVertical className="w-4 h-4" />
                     </Button>
-
+                    
                     {/* Dropdown (show only for this msg) */}
                     {showMoreOptions === msg.id && (
                       <div
                         ref={optionsRef}
                         className={`absolute top-1/2 ${
-                          isOwnMessage ? "-left-12" : "-right-35"
+                          isOwnMessage ? "-left-[3rem]" : "-right-[3rem]"
                         } translate-y-6 mt-2 z-50 w-32 bg-white border border-gray-200 shadow-md rounded-md`}
                       >
                         <Button
@@ -432,7 +446,7 @@ export default function ClassroomPage() {
                 {/* Avatar */}
                 {isOwnMessage && (
                   <Avatar className="w-8 h-8 mt-1">
-                    <AvatarFallback className="text-xs bg-blue-100 text-blue-600">
+                    <AvatarFallback className="text-xs font-semibold bg-blue-100 text-blue-600">
                       {msg.avatar}
                     </AvatarFallback>
                   </Avatar>

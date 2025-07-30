@@ -132,3 +132,18 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Scrollbar Custom Styling */
+::-webkit-scrollbar {
+  width: 5px; 
+  background: transparent;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #3b82f6; /* Tailwind's blue-500 */
+}
+
