@@ -82,13 +82,13 @@ export default function LandingPage() {
                   <div className="text-sm text-gray-500 text-left">AI Suggestions:</div>
                   <div className="space-y-2">
                     <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 px-3 py-2 rounded-lg text-sm cursor-pointer hover:bg-blue-100 transition-colors">
-                      "Great question! Let me explain..."
+                      &quot;Great question! Let me explain...&quot;
                     </div>
                     <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 px-3 py-2 rounded-lg text-sm cursor-pointer hover:bg-blue-100 transition-colors">
-                      "I can help with that topic"
+                      &quot;I can help with that topic&quot;
                     </div>
                     <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 px-3 py-2 rounded-lg text-sm cursor-pointer hover:bg-blue-100 transition-colors">
-                      "Here's a helpful resource..."
+                      &quot;Here&apos;s a helpful resource...&quot;
                     </div>
                   </div>
                 </div>

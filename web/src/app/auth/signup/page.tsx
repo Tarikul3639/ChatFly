@@ -84,7 +84,7 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex">
+    <div className="min-h-screen max-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex">
       {/* Left Side - Image/Illustration */}
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-indigo-500 to-purple-600 sm:p-12 items-center justify-center rounded-tr-[10rem]">
         <div className="text-center text-white max-w-md">
@@ -114,7 +114,7 @@ export default function SignupPage() {
       </div>
 
       {/* Right Side - Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-2 sm:p-8">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-2 sm:p-8 overflow-y-auto">
         <div className="w-full max-w-md">
           <Card className="shadow-xl border-0">
             <CardHeader className="space-y-1">
