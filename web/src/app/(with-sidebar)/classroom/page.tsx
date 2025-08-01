@@ -1,14 +1,31 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useRef } from "react"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { BotMessageSquare, Plus, Users, Bell, Settings, Search, BookOpen, Clock, Menu } from "lucide-react"
-import { Input } from "@/components/ui/input"
+import { useState, useEffect, useRef } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  BotMessageSquare,
+  Plus,
+  Users,
+  Bell,
+  Settings,
+  Search,
+  BookOpen,
+  Clock,
+  Menu,
+  X,
+} from "lucide-react";
+import { Input } from "@/components/ui/input";
 
 // Define types
 interface User {
@@ -19,35 +36,36 @@ interface User {
 }
 
 export default function DashboardPage() {
-  const [user, setUser] = useState<User | null>(null)
-  const [sidebarOpen, setSidebarOpen] = useState(false)
-  const router = useRouter()
-  const sidebar = useRef<HTMLDivElement>(null)
+  const [user, setUser] = useState<User | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const router = useRouter();
+  const sidebar = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     // const userData = localStorage.getItem("chatfly-user")
-    const userData = { id: 1, name: "John Doe" }
+    const userData = { id: 1, name: "John Doe" };
     if (!userData) {
-      router.push("/login")
-      return
+      router.push("/login");
+      return;
     }
-    setUser(userData)
-  }, [router])
+    setUser(userData);
+  }, [router]);
 
   // Outside click handler to close sidebar
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (!sidebar.current) return
+      if (!sidebar.current) return;
       if (sidebar.current && !sidebar.current.contains(event.target as Node)) {
-        setSidebarOpen(false)
+        setSidebarOpen(false);
       }
-    }
+    };
 
-    document.addEventListener("mousedown", handleClickOutside)
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside)
-    }
-  }, [sidebarOpen])
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [sidebarOpen]);
 
   const classrooms = [
     {
@@ -157,37 +175,88 @@ export default function DashboardPage() {
       unread: 0,
       lastActivity: "4 hours ago",
       color: "bg-green-600",
-    }
-  ]
+    },
+    {
+      id: 13,
+      name: "Psychology Basics",
+      description: "Introduction to psychological concepts",
+      members: 21,
+      unread: 3,
+      lastActivity: "1 hour ago",
+      color: "bg-purple-600",
+    },
+    {
+      id: 14,
+      name: "Sociology Studies",
+      description: "Understanding social behavior and society",
+      members: 13,
+      unread: 0,
+      lastActivity: "2 days ago",
+      color: "bg-orange-600",
+    },
+    {
+      id: 15,
+      name: "Astronomy Club",
+      description: "Exploring the universe and celestial bodies",
+      members: 11,
+      unread: 6,
+      lastActivity: "30 min ago",
+      color: "bg-red-600",
+    },
+  ];
 
-  if (!user) return null
+  if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+    <div className="relative min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 overflow-hidden">
       {/* Sidebar */}
-      <div ref={sidebar} className={`fixed left-0 top-0 h-full w-64 bg-white shadow-lg border-r border-gray-200 z-10 ${sidebarOpen ? 'block' : 'max-sm:hidden'}`}>
+      <div
+        ref={sidebar}
+        className={`absolute left-0 top-0 h-full w-64 bg-white shadow-lg border-r border-gray-200 z-10 ${
+          sidebarOpen ? "block" : "max-sm:hidden"
+        }`}
+      >
         <div className="flex flex-col h-screen">
-          <Link href="/" className="flex items-center space-x-2 shrink-0 border-b border-gray-200 p-6 pb-3">
-            <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
-              <BotMessageSquare className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-              ChatFly
-            </span>
-          </Link>
+          <div className="flex items-center space-x-2 shrink-0 border-b border-gray-200 p-6 pb-3">
+            <Link href="/" className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                <BotMessageSquare className="w-5 h-5 text-white" />
+              </div>
+              <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                ChatFly
+              </span>
+            </Link>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="ml-auto sm:hidden"
+              onClick={() => setSidebarOpen(false)}
+            >
+              <X className="w-5 h-5" />
+            </Button>
+          </div>
 
-          <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider py-3 px-6 border-b border-gray-200">My Classrooms</h3>
+          <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider py-3 px-6 border-b border-gray-200">
+            My Classrooms
+          </h3>
           <div className="space-y-2 flex-1 overflow-y-auto px-6">
             {classrooms.map((classroom) => (
               <Link key={classroom.id} href={`/classroom/${classroom.id}`}>
                 <div className="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-50 cursor-pointer group">
                   <div className={`w-3 h-3 rounded-full ${classroom.color}`} />
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">{classroom.name}</p>
-                    <p className="text-xs text-gray-500 truncate">{classroom.members} members</p>
+                    <p className="text-sm font-medium text-gray-900 truncate">
+                      {classroom.name}
+                    </p>
+                    <p className="text-xs text-gray-500 truncate">
+                      {classroom.members} members
+                    </p>
                   </div>
                   {classroom.unread > 0 && (
-                    <Badge variant="secondary" className="bg-blue-100 text-blue-600 text-xs">
+                    <Badge
+                      variant="secondary"
+                      className="bg-blue-100 text-blue-600 text-xs"
+                    >
                       {classroom.unread}
                     </Badge>
                   )}
@@ -204,14 +273,23 @@ export default function DashboardPage() {
         <header className="bg-white shadow-sm border-b border-gray-200 px-6 py-4 shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <Button  variant="ghost" onClick={() => setSidebarOpen(!sidebarOpen)} className="sm:hidden">
+              <Button
+                variant="ghost"
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                className="sm:hidden"
+              >
                 <span className="sr-only">Toggle sidebar</span>
                 <Menu className="w-5 h-5" />
               </Button>
-              <h1 className="hidden md:block text-2xl font-bold text-gray-900">Dashboard</h1>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                <Input placeholder="Search classrooms..." className="pl-10 w-64" />
+              <h1 className="hidden md:block text-2xl font-bold text-gray-900">
+                Dashboard
+              </h1>
+              <div className="relative group">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
+                <Input
+                  placeholder="Search classrooms..."
+                  className="transition-all duration-300 ease-in-out h-8 w-6 pl-6 group-focus-within:w-64 group-focus-within:pl-10 md:w-64 md:pl-10 group-focus-within:h-10"
+                />
               </div>
             </div>
             <div className="flex items-center space-x-4">
@@ -238,9 +316,12 @@ export default function DashboardPage() {
           <div className="max-w-7xl mx-auto">
             {/* Welcome Section */}
             <div className="mb-8">
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">Welcome back, {user?.name || "User"}! 👋</h2>
+              <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                Welcome back, {user?.name || "User"}! 👋
+              </h2>
               <p className="text-gray-600">
-                You have {classrooms.filter((c) => c.unread > 0).length} classrooms with new messages
+                You have {classrooms.filter((c) => c.unread > 0).length}{" "}
+                classrooms with new messages
               </p>
             </div>
 
@@ -252,11 +333,16 @@ export default function DashboardPage() {
                     <Plus className="w-5 h-5" />
                     <span>Create Classroom</span>
                   </CardTitle>
-                  <CardDescription className="text-blue-100">Start a new classroom and invite students</CardDescription>
+                  <CardDescription className="text-blue-100">
+                    Start a new classroom and invite students
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Link href="/classroom/create-classroom">
-                    <Button variant="secondary" className="bg-white text-blue-600 hover:bg-gray-100">
+                    <Button
+                      variant="secondary"
+                      className="bg-white text-blue-600 hover:bg-gray-100"
+                    >
                       Get Started
                     </Button>
                   </Link>
@@ -269,12 +355,19 @@ export default function DashboardPage() {
                     <Users className="w-5 h-5 text-green-600" />
                     <span>Join Classroom</span>
                   </CardTitle>
-                  <CardDescription>Enter a classroom code to join</CardDescription>
+                  <CardDescription>
+                    Enter a classroom code to join
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="flex space-x-2">
-                    <Input placeholder="Enter classroom code" className="flex-1" />
-                    <Button className="bg-green-600 hover:bg-green-700">Join</Button>
+                    <Input
+                      placeholder="Enter classroom code"
+                      className="flex-1"
+                    />
+                    <Button className="bg-green-600 hover:bg-green-700">
+                      Join
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
@@ -282,7 +375,9 @@ export default function DashboardPage() {
 
             {/* Classrooms Grid */}
             <div className="mb-8">
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">Your Classrooms</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-4">
+                Your Classrooms
+              </h3>
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {classrooms.map((classroom) => (
                   <Link key={classroom.id} href={`/classroom/${classroom.id}`}>
@@ -295,11 +390,17 @@ export default function DashboardPage() {
                             <BookOpen className="w-6 h-6 text-white" />
                           </div>
                           {classroom.unread > 0 && (
-                            <Badge className="bg-red-100 text-red-600">{classroom.unread} new</Badge>
+                            <Badge className="bg-red-100 text-red-600">
+                              {classroom.unread} new
+                            </Badge>
                           )}
                         </div>
-                        <CardTitle className="group-hover:text-blue-600 transition-colors">{classroom.name}</CardTitle>
-                        <CardDescription>{classroom.description}</CardDescription>
+                        <CardTitle className="group-hover:text-blue-600 transition-colors">
+                          {classroom.name}
+                        </CardTitle>
+                        <CardDescription>
+                          {classroom.description}
+                        </CardDescription>
                       </CardHeader>
                       <CardContent>
                         <div className="flex items-center justify-between text-sm text-gray-500">
@@ -323,28 +424,36 @@ export default function DashboardPage() {
             <Card className="shadow-lg border-0">
               <CardHeader>
                 <CardTitle>Recent Activity</CardTitle>
-                <CardDescription>Latest updates from your classrooms</CardDescription>
+                <CardDescription>
+                  Latest updates from your classrooms
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   <div className="flex items-center space-x-3 p-3 bg-blue-50 rounded-lg">
                     <div className="w-2 h-2 bg-blue-500 rounded-full" />
                     <div className="flex-1">
-                      <p className="text-sm font-medium">New message in Mathematics 101</p>
+                      <p className="text-sm font-medium">
+                        New message in Mathematics 101
+                      </p>
                       <p className="text-xs text-gray-500">2 minutes ago</p>
                     </div>
                   </div>
                   <div className="flex items-center space-x-3 p-3 bg-green-50 rounded-lg">
                     <div className="w-2 h-2 bg-green-500 rounded-full" />
                     <div className="flex-1">
-                      <p className="text-sm font-medium">Assignment posted in Computer Science</p>
+                      <p className="text-sm font-medium">
+                        Assignment posted in Computer Science
+                      </p>
                       <p className="text-xs text-gray-500">1 hour ago</p>
                     </div>
                   </div>
                   <div className="flex items-center space-x-3 p-3 bg-purple-50 rounded-lg">
                     <div className="w-2 h-2 bg-purple-500 rounded-full" />
                     <div className="flex-1">
-                      <p className="text-sm font-medium">New member joined Physics Lab</p>
+                      <p className="text-sm font-medium">
+                        New member joined Physics Lab
+                      </p>
                       <p className="text-xs text-gray-500">3 hours ago</p>
                     </div>
                   </div>
@@ -355,5 +464,5 @@ export default function DashboardPage() {
         </main>
       </div>
     </div>
-  )
+  );
 }

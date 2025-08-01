@@ -19,6 +19,8 @@ import {
   Reply,
   CheckCheck,
   LoaderCircle,
+  ChevronRight,
+  ChevronDown,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -50,12 +52,14 @@ export default function ClassroomPage() {
   const params = useParams();
   const router = useRouter();
   const optionsRef = useRef<HTMLDivElement>(null);
+  const chatSummaryRef = useRef<HTMLDivElement>(null);
   const [user, setUser] = useState<User | null>(null);
   const [message, setMessage] = useState("");
   const [showAISuggestions, setShowAISuggestions] = useState(false);
   const [timestamp, setTimestamp] = useState("");
   const [showChatSummary, setShowChatSummary] = useState(false);
   const [showMoreOptions, setShowMoreOptions] = useState<number | null>(null);
+  const [showMembers, setShowMembers] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 1,
@@ -164,13 +168,21 @@ export default function ClassroomPage() {
       ) {
         setShowMoreOptions(null);
       }
+
+      if (
+        showChatSummary &&
+        chatSummaryRef.current &&
+        !chatSummaryRef.current.contains(event.target as Node)
+      ) {
+        setShowChatSummary(false);
+      }
     };
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [showMoreOptions]);
+  }, [showMoreOptions, showChatSummary]);
 
   // Generate timestamp on client side
   useEffect(() => {
@@ -227,70 +239,26 @@ export default function ClassroomPage() {
 
   return (
     <div className="h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex">
-      {/* Left Panel - Members */}
-      <div className="w-64 bg-white shadow-lg border-r border-gray-200 h-screen flex flex-col">
-        <div className="p-4 border-b border-gray-200 shrink-0">
-          <Link href="/classroom/dashboard">
-            <Button variant="ghost" size="sm" className="mb-3">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Dashboard
-            </Button>
-          </Link>
-          <h3 className="font-semibold text-gray-900">
-            Members ({members.length})
-          </h3>
-        </div>
-        <div className="p-4 space-y-3 h-full overflow-y-auto">
-          {members.map((member, index) => (
-            <div key={index} className="flex items-center space-x-3">
-              <div className="relative">
-                <Avatar className="w-8 h-8">
-                  <AvatarFallback
-                    className={`text-xs font-semibold ${
-                      member.role === "teacher"
-                        ? "bg-purple-100 text-purple-600"
-                        : "bg-blue-100 text-blue-600"
-                    }`}
-                  >
-                    {member.avatar}
-                  </AvatarFallback>
-                </Avatar>
-                <div
-                  className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-white ${
-                    member.status === "online"
-                      ? "bg-green-400"
-                      : member.status === "away"
-                      ? "bg-yellow-400"
-                      : "bg-gray-400"
-                  }`}
-                />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 truncate">
-                  {member.name}
-                </p>
-                <p className="text-xs text-gray-500 capitalize">
-                  {member.role}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col">
+      <div className="relative flex-1 flex flex-col">
         {/* Header */}
         <header className="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-xl font-bold text-gray-900">
-                {classroom.name}
-              </h1>
-              <p className="text-sm text-gray-500">
-                {classroom.members} members{" "}
-                <span className="text-green-500">• Active now</span>
-              </p>
+            <div className="flex items-center space-x-3">
+              <Link href="/classroom">
+                <Button variant="ghost" size="default">
+                  <ArrowLeft className="w-4 h-4" />
+                </Button>
+              </Link>
+              <div>
+                <h1 className="text-xl font-bold text-gray-900">
+                  {classroom.name}
+                </h1>
+                <p className="text-sm text-gray-500">
+                  {classroom.members} members{" "}
+                  <span className="text-green-500">• Active now</span>
+                </p>
+              </div>
             </div>
             <div className="flex items-center space-x-2">
               <Button variant="ghost" size="icon">
@@ -372,7 +340,9 @@ export default function ClassroomPage() {
                       size="icon"
                       className={`absolute top-1/2 -translate-y-1/2 transition-opacity group-hover:opacity-100 
                       ${isOwnMessage ? "left-[-3rem]" : "right-[-3rem]"} 
-                      ${showMoreOptions === msg.id ? "opacity-100" : "opacity-0"}`}
+                      ${
+                        showMoreOptions === msg.id ? "opacity-100" : "opacity-0"
+                      }`}
                       onClick={() =>
                         setShowMoreOptions(
                           showMoreOptions === msg.id ? null : msg.id
@@ -381,7 +351,7 @@ export default function ClassroomPage() {
                     >
                       <MoreVertical className="w-4 h-4" />
                     </Button>
-                    
+
                     {/* Dropdown (show only for this msg) */}
                     {showMoreOptions === msg.id && (
                       <div
@@ -525,11 +495,18 @@ export default function ClassroomPage() {
 
       {/* Right Panel - Chat Summary */}
       {showChatSummary && (
-        <div className="w-80 bg-white shadow-lg border-l border-gray-200">
+        <div
+          ref={chatSummaryRef}
+          className="absolute right-0 w-80 bg-white shadow-lg border-l border-gray-200 h-screen flex flex-col overflow-hidden"
+        >
+          {/* Header */}
           <div className="p-4 border-b border-gray-200">
             <h3 className="font-semibold text-gray-900">Chat Summary</h3>
           </div>
-          <div className="p-4 space-y-4">
+
+          {/* Body Content */}
+          <div className="p-4 space-y-4 flex-1 overflow-y-auto">
+            {/* AI Insights */}
             <Card className="border-0 bg-gradient-to-r from-blue-50 to-indigo-50">
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm flex items-center space-x-2">
@@ -545,6 +522,7 @@ export default function ClassroomPage() {
               </CardContent>
             </Card>
 
+            {/* Quick Notes */}
             <div>
               <h4 className="text-sm font-medium text-gray-900 mb-2">
                 Quick Notes
@@ -563,12 +541,68 @@ export default function ClassroomPage() {
               </div>
             </div>
 
+            {/* Pinned Messages */}
             <div>
-              <h4 className="text-sm font-medium text-gray-900 mb-2">
+              <h4 className="text-sm font-medium text-gray-900 mb-2 border-b border-gray-200 pb-2">
                 Pinned Messages
               </h4>
               <div className="text-xs text-gray-500">
                 No pinned messages yet
+              </div>
+            </div>
+
+            {/* Members */}
+            <div className="flex flex-col bg-white rounded-md">
+              <div
+                className={`flex flex-row justify-between border-b border-gray-200 py-2`}
+              >
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full flex justify-between text-xs text-gray-500 hover:text-blue-600"
+                  onClick={() => setShowMembers(!showMembers)}
+                >
+                  <span>Members ({members.length})</span>
+                  {showMembers ? <ChevronDown /> : <ChevronRight />}
+                </Button>
+              </div>
+              <div
+                className={`p-4 space-y-3 ${showMembers ? "block" : "hidden"}`}
+              >
+                {members.map((member, index) => (
+                  <div key={index} className="flex items-center space-x-3">
+                    <div className="relative">
+                      <Avatar className="w-8 h-8">
+                        <AvatarFallback
+                          className={`text-xs font-semibold ${
+                            member.role === "teacher"
+                              ? "bg-purple-100 text-purple-600"
+                              : "bg-blue-100 text-blue-600"
+                          }`}
+                        >
+                          {member.avatar}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div
+                        className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-white ${
+                          member.status === "online"
+                            ? "bg-green-400"
+                            : member.status === "away"
+                            ? "bg-yellow-400"
+                            : "bg-gray-400"
+                        }`}
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-900 truncate">
+                        {member.name}
+                      </p>
+                      <p className="text-xs text-gray-500 capitalize">
+                        {member.role}
+                      </p>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
