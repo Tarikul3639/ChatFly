@@ -1,9 +1,8 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useMemo } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Input } from "@/components/ui/input"
 import {
@@ -16,16 +15,42 @@ import {
   ArrowLeft,
 } from "lucide-react"
 
+// Define types
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+}
+
+interface Chat {
+  id: number;
+  name: string;
+  type: string;
+  avatar: string;
+  online: boolean;
+  members?: number;
+}
+
+interface Message {
+  id: number;
+  sender: string;
+  content: string;
+  timestamp: string;
+  avatar: string;
+  isOwn: boolean;
+}
+
 export default function ChatPage() {
   const params = useParams()
   const router = useRouter()
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<User | null>(null)
   const [message, setMessage] = useState("")
-  const [chat, setChat] = useState<any>(null)
+  const [chat, setChat] = useState<Chat | null>(null)
 
-  // Sample chat data (you can replace with API call)
-  const chats = [
+  // Sample chat data (you can replace with API call) - memoized to prevent re-renders
+  const chats = useMemo(() => [
     {
       id: 1,
       name: "Mathematics 101",
@@ -65,9 +90,9 @@ export default function ChatPage() {
       online: true,
       members: 32,
     },
-  ]
+  ], []);
 
-  const [messages, setMessages] = useState([
+  const [messages, setMessages] = useState<Message[]>([
     {
       id: 1,
       sender: "Dr. Smith",
@@ -130,7 +155,7 @@ export default function ChatPage() {
     if (foundChat) {
       setChat(foundChat)
     }
-  }, [params.chatId, router])
+  }, [params.chatId, router, chats])
 
   // Scroll to bottom when new messages are added
   useEffect(() => {

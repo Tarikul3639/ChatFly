@@ -238,7 +238,7 @@ export default function ClassroomPage() {
   if (!user) return null;
 
   return (
-    <div className="h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex">
+    <div className="max-sm:fixed max-sm:inset-0 max-sm:z-50 h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex">
       {/* Main Chat Area */}
       <div className="relative flex-1 flex flex-col">
         {/* Header */}
