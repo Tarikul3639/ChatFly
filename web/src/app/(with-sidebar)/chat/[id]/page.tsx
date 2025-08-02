@@ -89,7 +89,7 @@ export default function ChatConversationPage() {
   }
 
   return (
-    <>
+    <div className="flex-1 flex flex-col z-50">
       {/* Chat Header */}
       <ChatHeader selectedChat={selectedChat} onBack={handleBackToList} />
 
@@ -97,7 +97,7 @@ export default function ChatConversationPage() {
       <Message messages={messages} messagesEndRef={messagesEndRef} />
 
       {/* Message Input */}
-      <div className="flex-none bg-white border-t border-gray-200 safe-area-bottom">
+      <div className="bg-white border-t border-gray-200 safe-area-bottom">
         <MessageInput
           message={message}
           setMessage={setMessage}
@@ -111,6 +111,6 @@ export default function ChatConversationPage() {
           textareaRef={textareaRef}
         />
       </div>
-    </>
+    </div>
   );
 }

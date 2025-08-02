@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { Chat, chats } from "./types";
 import ChatList from "./components/ChatList";
+import Welcome from "./components/Welcome";
 
 export default function ChatLayout({
   children,
@@ -13,6 +14,12 @@ export default function ChatLayout({
   const router = useRouter();
   const params = useParams();
   const [selectedChatId, setSelectedChatId] = useState<number | null>(null);
+  const user = {
+    id: 1,
+    name: "John Doe",
+    email: "john.doe@example.com",
+    role: "student",
+  };
 
   // Handle chat selection
   const handleChatSelect = (chat: Chat) => {
@@ -30,13 +37,11 @@ export default function ChatLayout({
   }, [params?.id]);
 
   return (
-    <div className="h-screen bg-white flex">
+    <div className="sm:h-screen bg-white flex">
       {/* Chat List Sidebar - Always visible on desktop, conditional on mobile */}
       <div
         className={`${
-          selectedChatId 
-            ? "hidden sm:block sm:w-80" 
-            : "block w-full sm:w-80"
+          selectedChatId ? "hidden md:block sm:w-80" : "block w-full sm:w-80"
         } border-r border-gray-200`}
       >
         <ChatList
@@ -44,17 +49,14 @@ export default function ChatLayout({
           selectedChatId={selectedChatId || undefined}
         />
       </div>
-
-      {/* Chat Content Area */}
-      <div
-        className={`${
-          selectedChatId
-            ? "flex flex-col flex-1 z-50"
-            : "hidden sm:flex flex-col flex-1"
-        }`}
-      >
-        {children}
-      </div>
+      {/* Main content area */}
+      {selectedChatId ? (
+        children
+      ) : (
+        <div className="hidden md:flex-1 flex items-center justify-center">
+          <Welcome userName={user.name} />
+        </div>
+      )}
     </div>
   );
 }

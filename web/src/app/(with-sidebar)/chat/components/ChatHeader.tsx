@@ -25,7 +25,7 @@ export default function ChatHeader({ selectedChat, onBack }: ChatHeaderProps) {
           <Button
             size="icon"
             variant="ghost"
-            className="sm:hidden"
+            className="md:hidden"
             onClick={onBack}
           >
             <ArrowLeft className="w-5 h-5" />
