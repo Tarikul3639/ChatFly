@@ -82,8 +82,11 @@ export default function ChatConversationPage() {
 
   if (!selectedChat) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <div className="text-gray-500">Loading chat...</div>
+      <div className="flex items-center justify-center h-[100dvh] w-[100dvw]">
+        <div className="flex flex-col items-center space-y-3">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <div className="text-gray-500">Loading chat...</div>
+        </div>
       </div>
     );
   }
