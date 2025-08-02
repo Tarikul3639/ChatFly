@@ -15,8 +15,8 @@ interface MessageInputProps {
   setIsRecording: (v: boolean) => void;
   aiSuggestions: string[];
   onAISuggestion: (s: string) => void;
+  textareaRef: React.RefObject<HTMLTextAreaElement>;
 }
-
 export default function MessageInput({
   message,
   setMessage,
@@ -27,22 +27,8 @@ export default function MessageInput({
   setIsRecording,
   aiSuggestions,
   onAISuggestion,
+  textareaRef,
 }: MessageInputProps) {
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-
-  // Auto-resize textarea
-  const adjustTextareaHeight = () => {
-    const textarea = textareaRef.current;
-    if (textarea) {
-      textarea.style.height = "auto";
-      const newHeight = Math.min(textarea.scrollHeight, 120);
-      textarea.style.height = newHeight + "px";
-    }
-  };
-
-  useEffect(() => {
-    adjustTextareaHeight();
-  }, [message]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -60,7 +46,7 @@ export default function MessageInput({
 
   return (
     <div>
-      <div className="flex items-end space-x-2 max-w-4xl p-2 md:p-4 mx-auto">
+      <div className="flex items-end space-x-2 max-w-4xl p-2 md:p-4 mx-auto z-50">
         {/* Attachment Button */}
         <Button
           size="icon"
@@ -75,11 +61,9 @@ export default function MessageInput({
           <div className="flex items-end bg-gray-100 hover:bg-gray-200 transition-colors rounded-2xl px-4 py-2 min-h-[44px]">
             <Textarea
               ref={textareaRef}
+              autoFocus
               value={message}
-              onChange={(e) => {
-                setMessage(e.target.value);
-                adjustTextareaHeight();
-              }}
+              onChange={(e) => setMessage(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder={"Type a message..."}
               className="flex-1 bg-transparent border-0 resize-none min-h-[28px] max-h-[120px] text-sm md:text-base placeholder:text-gray-500 focus-visible:ring-0 focus-visible:ring-offset-0 p-0 leading-6 hide-scrollbar shadow-none break-words overflow-wrap break-all"
@@ -169,7 +153,6 @@ export default function MessageInput({
                 className="bg-white border border-blue-200 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:border-blue-300 transition-colors flex items-center space-x-2"
               >
                 <span>{suggestion}</span>
-                {/* Optionally add thumbs up/down here if needed */}
               </button>
             ))}
           </div>

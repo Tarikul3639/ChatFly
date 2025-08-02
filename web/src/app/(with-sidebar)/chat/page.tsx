@@ -56,6 +56,7 @@ function ChatPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const messagesEndRef = useRef<HTMLDivElement>(null!);
+  const textareaRef = useRef<HTMLTextAreaElement>(null!);
   const [isRecording, setIsRecording] = useState(false);
 
   // Chat data - memoized to prevent re-renders
@@ -173,11 +174,13 @@ function ChatPageContent() {
 
     setMessages([...messages, newMessage]);
     setMessage("");
+    textareaRef?.current?.focus();
   };
 
   const handleAISuggestion = (suggestion: string) => {
     setMessage(suggestion);
     setShowAISuggestions(false);
+    textareaRef?.current?.focus();
   };
 
   useEffect(() => {
@@ -231,26 +234,22 @@ function ChatPageContent() {
 
       {/* Main Chat Area - Hidden on mobile when no chat selected */}
       <div
-        className={`flex-1 flex flex-col h-screen z-50 ${
-          !selectedChat ? "hidden sm:flex" : "flex"
+        className={`${
+          selectedChat
+            ? "flex flex-col flex-1"
+            : "hidden sm:flex flex-col flex-1"
         }`}
       >
         {selectedChat ? (
           <>
             {/* Chat Header */}
-            <ChatHeader 
-              selectedChat={selectedChat} 
-              onBack={handleBackToList} 
-            />
+            <ChatHeader selectedChat={selectedChat} onBack={handleBackToList} />
 
             {/* Messages */}
-            <Message
-              messages={messages}
-              messagesEndRef={messagesEndRef}
-            />
+            <Message messages={messages} messagesEndRef={messagesEndRef} />
 
             {/* Message Input */}
-            <div className="bg-white border-t border-gray-200 safe-area-bottom">
+            <div className="flex-none bg-white border-t border-gray-200 safe-area-bottom">
               <MessageInput
                 message={message}
                 setMessage={setMessage}
@@ -261,6 +260,7 @@ function ChatPageContent() {
                 setIsRecording={setIsRecording}
                 aiSuggestions={aiSuggestions}
                 onAISuggestion={handleAISuggestion}
+                textareaRef={textareaRef}
               />
             </div>
           </>
