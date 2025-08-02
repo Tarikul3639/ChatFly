@@ -4,7 +4,7 @@
 import { useState, useEffect } from "react";
 import { BotMessageSquare, MessageCircle, BookOpen, User } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 
 // Define types
 interface User {
@@ -28,10 +28,10 @@ const mobileSidebarItems = [
 ];
 
 export default function Sidebar() {
-  const [activeTab, setActiveTab] = useState("messenger");
+  const [activeTab, setActiveTab] = useState("chat");
   const [user, setUser] = useState<User | null>(null);
   const router = useRouter();
-
+  const pathname = usePathname();
 
   useEffect(() => {
     const userData = {
@@ -42,6 +42,17 @@ export default function Sidebar() {
     };
     setUser(userData);
   }, []);
+
+  // Set active tab based on current pathname
+  useEffect(() => {
+    if (pathname === "/chat") {
+      setActiveTab("chat");
+    } else if (pathname === "/classroom") {
+      setActiveTab("classroom");
+    } else if (pathname === "/profile") {
+      setActiveTab("profile");
+    }
+  }, [pathname]);
 
   return (
     <>
