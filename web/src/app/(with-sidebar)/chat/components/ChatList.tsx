@@ -10,18 +10,7 @@ import {
   Search,
   Plus,
 } from "lucide-react"
-
-interface Chat {
-  id: number
-  name: string
-  type: string
-  lastMessage: string
-  timestamp: string
-  unread: number
-  avatar: string
-  online: boolean
-  members?: number
-}
+import { Chat, ChatWithMessages, chatsWithMessages } from "../types"
 
 interface ChatListProps {
   onChatSelect?: (chat: Chat) => void
@@ -32,117 +21,8 @@ export default function ChatList({ onChatSelect, selectedChatId }: ChatListProps
   const router = useRouter()
   const [searchQuery, setSearchQuery] = useState("")
 
-  const chats: Chat[] = [
-    {
-      id: 1,
-      name: "Mathematics 101",
-      type: "classroom",
-      lastMessage: "Dr. Smith: Great question about derivatives!",
-      timestamp: "2 min",
-      unread: 3,
-      avatar: "M1",
-      online: true,
-      members: 24,
-    },
-    {
-      id: 2,
-      name: "Physics Lab",
-      type: "classroom",
-      lastMessage: "Alice: When is the next lab session?",
-      timestamp: "1h",
-      unread: 0,
-      avatar: "PL",
-      online: true,
-      members: 18,
-    },
-    {
-      id: 3,
-      name: "Dr. Smith",
-      type: "direct",
-      lastMessage: "Please review chapter 5 for tomorrow",
-      timestamp: "3h",
-      unread: 1,
-      avatar: "DS",
-      online: true,
-    },
-    {
-      id: 4,
-      name: "Study Group",
-      type: "group",
-      lastMessage: "Bob: Anyone free for study session?",
-      timestamp: "5h",
-      unread: 0,
-      avatar: "SG",
-      online: false,
-      members: 6,
-    },
-    {
-      id: 5,
-      name: "Computer Science",
-      type: "classroom",
-      lastMessage: "Assignment due tomorrow!",
-      timestamp: "1d",
-      unread: 7,
-      avatar: "CS",
-      online: true,
-      members: 32,
-    },
-    {
-      id: 6,
-      name: "Group Project",
-      type: "group",
-      lastMessage: "Let's finalize the presentation slides",
-      timestamp: "2d",
-      unread: 2,
-      avatar: "GP",
-      online: false,
-      members: 10,
-    },
-    {
-      id: 7,
-      name: "History Discussion",
-      type: "classroom",
-      lastMessage: "Discussion on World War II",
-      timestamp: "3d",
-      unread: 0,
-      avatar: "HD",
-      online: false,
-      members: 15,
-    },
-    {
-      id: 8,
-      name: "Chemistry Club",
-      type: "group",
-      lastMessage: "Next meeting on Friday",
-      timestamp: "4d",
-      unread: 0,
-      avatar: "CC",
-      online: false,
-      members: 20,
-    },
-    {
-      id: 9,
-      name: "Art Class",
-      type: "classroom",
-      lastMessage: "Don't forget to bring your sketchbooks!",
-      timestamp: "5d",
-      unread: 0,
-      avatar: "AC",
-      online: false,
-      members: 12,
-    },
-    {
-      id: 10,
-      name: "Music Theory",
-      type: "classroom",
-      lastMessage: "Practice your scales for next week",
-      timestamp: "6d",
-      unread: 0,
-      avatar: "MT",
-      online: false,
-      members: 8,
-    },
-  ]
+  // Use the shared chat data with messages
+  const chats: ChatWithMessages[] = chatsWithMessages
 
   // Filter chats based on search query
   const filteredChats = chats.filter(chat =>
@@ -154,8 +34,8 @@ export default function ChatList({ onChatSelect, selectedChatId }: ChatListProps
     if (onChatSelect) {
       onChatSelect(chat)
     }
-    // Update URL with chat ID
-    router.push(`/chat?id=${chat.id}`, { scroll: false })
+    // Update URL with chat ID using dynamic route
+    router.push(`/chat/${chat.id}`)
   }
 
   return (
