@@ -30,15 +30,6 @@ export default function MessageInput({
   textareaRef,
 }: MessageInputProps) {
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      if (message.trim()) {
-        onSend();
-      }
-    }
-  };
-
   const handleVoiceRecord = () => {
     setIsRecording(!isRecording);
     // Add voice recording logic here
@@ -64,7 +55,6 @@ export default function MessageInput({
               autoFocus
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              onKeyDown={handleKeyDown}
               placeholder={"Type a message..."}
               className="flex-1 bg-transparent border-0 resize-none min-h-[28px] max-h-[120px] text-sm md:text-base placeholder:text-gray-500 focus-visible:ring-0 focus-visible:ring-offset-0 p-0 leading-6 hide-scrollbar shadow-none break-words overflow-wrap break-all"
               rows={1}

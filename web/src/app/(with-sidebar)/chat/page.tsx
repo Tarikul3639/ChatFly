@@ -216,7 +216,7 @@ function ChatPageContent() {
 
   return (
     <div
-      className={`h-screen bg-white flex pb-16 sm:pb-0 ${
+      className={`sm:h-screen bg-white flex ${
         selectedChat ? "max-sm:fixed max-sm:inset-0 max-sm:z-50" : ""
       }`}
     >
