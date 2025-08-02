@@ -238,11 +238,11 @@ export default function ClassroomPage() {
   if (!user) return null;
 
   return (
-    <div className="max-sm:fixed max-sm:inset-0 max-sm:z-50 h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex">
+    <div className="max-sm:fixed max-sm:inset-0 max-sm:z-50 bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex">
       {/* Main Chat Area */}
-      <div className="relative flex-1 flex flex-col">
+      <div className="relative flex flex-col">
         {/* Header */}
-        <header className="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+        <header className="bg-white shadow-sm border-b border-gray-200 sm:px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <Link href="/classroom">
@@ -276,7 +276,7 @@ export default function ClassroomPage() {
         </header>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-4">
+        <div className="flex-1 overflow-y-auto p-2 sm:p-6 space-y-4">
           {messages.map((msg) => {
             const isOwnMessage = msg.user === user.name;
 
@@ -301,7 +301,7 @@ export default function ClassroomPage() {
                   </Avatar>
                 )}
 
-                <div className="flex flex-col max-w-md">
+                <div className="flex flex-col max-w-[70%] md:max-w-xs lg:max-w-md">
                   <div
                     className={`flex items-center space-x-2 mb-1 ${
                       isOwnMessage
@@ -332,7 +332,9 @@ export default function ClassroomPage() {
                     }`}
                   >
                     {/* Message Content */}
-                    <p className="text-sm pr-1">{msg.content}</p>
+                    <p className="text-sm break-words whitespace-pre-wrap break-words overflow-wrap break-all">
+                      {msg.content}
+                    </p>
 
                     {/* More Options */}
                     <Button
@@ -427,36 +429,9 @@ export default function ClassroomPage() {
           <div ref={messagesEndRef} />
         </div>
 
-        {/* AI Suggestions Bar */}
-        {showAISuggestions && (
-          <div className="px-6 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-t border-blue-200">
-            <div className="flex items-center space-x-2 mb-2">
-              <Sparkles className="w-4 h-4 text-blue-600" />
-              <span className="text-sm font-medium text-blue-800">
-                AI Suggestions
-              </span>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {aiSuggestions.map((suggestion, index) => (
-                <button
-                  key={index}
-                  onClick={() => handleAISuggestion(suggestion)}
-                  className="bg-white border border-blue-200 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:border-blue-300 transition-colors flex items-center space-x-2"
-                >
-                  <span>{suggestion}</span>
-                  <div className="flex space-x-1">
-                    <ThumbsUp className="w-3 h-3 text-gray-400 hover:text-green-500 cursor-pointer" />
-                    <ThumbsDown className="w-3 h-3 text-gray-400 hover:text-red-500 cursor-pointer" />
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
         {/* Message Input */}
-        <div className="bg-white border-t border-gray-200 p-4">
-          <div className="flex items-end space-x-3">
+        <div className="bg-white border-t border-gray-200 safe-area-bottom">
+          <div className="flex items-end space-x-3 p-4">
             <div className="flex-1">
               <div className="relative">
                 <Input
@@ -490,6 +465,33 @@ export default function ClassroomPage() {
               <Send className="w-4 h-4" />
             </Button>
           </div>
+
+          {/* AI Suggestions Bar */}
+          {showAISuggestions && (
+            <div className="px-6 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-t border-blue-200">
+              <div className="flex items-center space-x-2 mb-2">
+                <Sparkles className="w-4 h-4 text-blue-600" />
+                <span className="text-sm font-medium text-blue-800">
+                  AI Suggestions
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {aiSuggestions.map((suggestion, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleAISuggestion(suggestion)}
+                    className="bg-white border border-blue-200 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:border-blue-300 transition-colors flex items-center space-x-2"
+                  >
+                    <span>{suggestion}</span>
+                    <div className="flex space-x-1">
+                      <ThumbsUp className="w-3 h-3 text-gray-400 hover:text-green-500 cursor-pointer" />
+                      <ThumbsDown className="w-3 h-3 text-gray-400 hover:text-red-500 cursor-pointer" />
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

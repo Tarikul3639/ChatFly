@@ -217,7 +217,7 @@ function ChatPageContent() {
   return (
     <div
       className={`sm:h-screen bg-white flex ${
-        selectedChat ? "max-sm:fixed max-sm:inset-0 max-sm:z-50" : ""
+        selectedChat ? "max-sm:fixed max-sm:inset-0 max-sm:z-50" : "h-screen"
       }`}
     >
       {/* Sidebar - Hidden on mobile when chat is selected */}

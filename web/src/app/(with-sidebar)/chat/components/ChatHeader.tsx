@@ -18,14 +18,14 @@ interface ChatHeaderProps {
 
 export default function ChatHeader({ selectedChat, onBack }: ChatHeaderProps) {
   return (
-    <div className="bg-white border-b border-gray-200 p-4">
+    <div className="bg-white border-b border-gray-200 md:px-6 py-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
           {/* Back button for mobile */}
           <Button
             size="icon"
             variant="ghost"
-            className="md:hidden"
+            className="sm:hidden"
             onClick={onBack}
           >
             <ArrowLeft className="w-5 h-5" />
@@ -45,14 +45,19 @@ export default function ChatHeader({ selectedChat, onBack }: ChatHeaderProps) {
             </AvatarFallback>
           </Avatar>
           <div>
-            <h3 className="font-semibold text-gray-900">
-              {selectedChat.name}
-            </h3>
-            <p className="text-sm text-gray-500">
-              {selectedChat.online ? "Active now" : "Last seen 2h ago"}
-              {selectedChat.members &&
-                ` • ${selectedChat.members} members`}
-            </p>
+            <h3 className="font-semibold text-gray-900">{selectedChat.name}</h3>
+            <div className="flex flex-col md:flex-row text-xs text-gray-500">
+              <span className="md:mr-2">
+                {selectedChat.members && ` ${selectedChat.members} members`}
+              </span>
+              <span className="font-medium">
+                {selectedChat.online ? (
+                  <span className="text-green-500">Active now</span>
+                ) : (
+                  "Last seen 2h ago"
+                )}
+              </span>
+            </div>
           </div>
         </div>
 

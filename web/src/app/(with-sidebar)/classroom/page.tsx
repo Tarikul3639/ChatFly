@@ -17,7 +17,6 @@ import {
   Plus,
   Users,
   Bell,
-  Search,
   BookOpen,
   Clock,
 } from "lucide-react";
@@ -193,16 +192,9 @@ export default function DashboardPage() {
         <header className="bg-white shadow-sm border-b border-gray-200 px-6 py-4 shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <h1 className="hidden sm:block text-2xl font-bold text-gray-900">
-                Dashboard
+              <h1 className="text-2xl font-extrabold sm:font-bold text-gray-900">
+                Classroom
               </h1>
-              <div className="relative group">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
-                <Input
-                  placeholder="Search classrooms..."
-                  className="transition-all duration-300 ease-in-out h-10 w-6 pl-6 group-focus-within:w-64 group-focus-within:pl-10 sm:w-64 sm:pl-10 group-focus-within:h-10"
-                />
-              </div>
             </div>
             <div className="flex items-center space-x-4">
               <Button variant="ghost" size="icon" className="relative">

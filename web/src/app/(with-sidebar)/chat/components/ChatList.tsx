@@ -159,7 +159,7 @@ export default function ChatList({ onChatSelect, selectedChatId }: ChatListProps
   }
 
   return (
-    <div className="w-full md:w-80 bg-gray-50 border-r border-gray-200 flex flex-col h-full">
+    <div className="w-full md:w-80 bg-gray-50 border-r border-gray-200 flex flex-col h-full pb-16 sm:pb-0">
       {/* Header */}
       <div className="p-4 bg-white border-b border-gray-200">
         <div className="flex items-center justify-between mb-4">
@@ -188,7 +188,7 @@ export default function ChatList({ onChatSelect, selectedChatId }: ChatListProps
             key={chat.id}
             onClick={() => handleChatClick(chat)}
             className={`p-3 border-b border-gray-100 rounded-md cursor-pointer hover:bg-blue-100 transition-colors touch-manipulation ${
-              selectedChatId === chat.id ? "border-l-4 bg-blue-100 border-l-blue-500" : ""
+              selectedChatId === chat.id ? "border-x-4 bg-blue-100 border-x-blue-500" : ""
             }`}
           >
             <div className="flex items-center space-x-3">
