@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -10,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { ArrowLeft, User, Mail, BookOpen, MessageCircle, Settings, Bell, Shield, LogOut } from "lucide-react"
+import { User, Mail, BookOpen, MessageCircle, Settings, Bell, Shield, LogOut } from "lucide-react"
 
 // Define types
 interface User {
@@ -62,16 +61,10 @@ export default function ProfilePage() {
   if (!user) return null
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+    <div className="h-screen pb-16 sm:pb-0 overflow-y-auto bg-gradient-to-br from-blue-50 via-white to-indigo-50">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          <Link href="/classroom">
-            <Button variant="ghost" className="mb-4">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Dashboard
-            </Button>
-          </Link>
           <div className="flex items-center space-x-4">
             <Avatar className="w-16 h-16">
               <AvatarFallback className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white text-xl">

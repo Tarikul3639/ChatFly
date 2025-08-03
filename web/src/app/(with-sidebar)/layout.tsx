@@ -14,16 +14,16 @@ export default function WithSidebarLayout({
   const isConversationPage = pathname?.match(/\/(chat|classroom)\/\d+$/);
 
   return (
-    <>
+    <div className="flex h-screen">
       {/* Sidebar - Hidden on conversation pages */}
-      <div className={isConversationPage ? 'hidden' : 'block'}>
+      <div className={`flex shrink-0 ${isConversationPage ? 'hidden md:block' : 'block'}`}>
         <Sidebar />
       </div>
       
       {/* Main content */}
-      <main className={`bg-gray-100 ${isConversationPage ? '' : 'md:ml-16'}`}>
+      <main className={`flex-1 bg-gray-100`}>
         {children}
       </main>
-    </>
+    </div>
   );
 }

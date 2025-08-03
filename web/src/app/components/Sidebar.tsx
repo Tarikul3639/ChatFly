@@ -57,7 +57,7 @@ export default function Sidebar() {
   return (
     <>
       {/* Desktop Sidebar */}
-      <aside className="hidden sm:flex fixed top-0 left-0 h-screen w-16 bg-gradient-to-b from-blue-600 to-indigo-700 flex-col items-center py-6 space-y-6 z-40">
+      <aside className="hidden sm:flex h-screen w-16 bg-gradient-to-b from-blue-600 to-indigo-700 flex-col items-center py-6 space-y-6">
         <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
           <BotMessageSquare className="w-6 h-6 text-white" />
         </div>
