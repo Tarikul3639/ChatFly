@@ -50,7 +50,7 @@ export default function CreateClassroomPage() {
     e.preventDefault()
     // Simulate classroom creation
     alert(`Classroom "${classroomName}" created successfully! Invite code: ${inviteCode}`)
-    router.push("/classroom/dashboard")
+    router.push("/classroom")
   }
 
   const generateNewCode = () => {
@@ -61,11 +61,11 @@ export default function CreateClassroomPage() {
   if (!user) return null
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
-      <div className="container mx-auto px-4 py-8">
+    <div className="sm:h-screen flex overflow-y-auto pb-16 sm:pb-0 bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+      <div className="container mx-auto px-4">
         {/* Header */}
         <div className="mb-8">
-          <Link href="/classroom/dashboard">
+          <Link href="/classroom">
             <Button variant="ghost" className="mb-4">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Dashboard
@@ -80,7 +80,7 @@ export default function CreateClassroomPage() {
           <p className="text-gray-600">Set up a new classroom space for your students</p>
         </div>
 
-        <div className="max-w-2xl mx-auto">
+        <div className="mx-auto flex flex-col md:flex-row space-y-6 md:space-x-6">
           <Card className="shadow-xl border-0">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
@@ -175,7 +175,7 @@ export default function CreateClassroomPage() {
           </Card>
 
           {/* Tips Card */}
-          <Card className="mt-6 border-0 bg-gradient-to-r from-green-50 to-emerald-50">
+          <Card className="border-0 bg-gradient-to-r from-green-50 to-emerald-50">
             <CardHeader>
               <CardTitle className="text-lg text-green-800">💡 Pro Tips</CardTitle>
             </CardHeader>
