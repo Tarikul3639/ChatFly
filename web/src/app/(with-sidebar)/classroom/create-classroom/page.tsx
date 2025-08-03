@@ -62,7 +62,7 @@ export default function CreateClassroomPage() {
 
   return (
     <div className="sm:h-screen flex overflow-y-auto pb-16 sm:pb-0 bg-gradient-to-br from-blue-50 via-white to-indigo-50">
-      <div className="container mx-auto px-4">
+      <div className="container flex flex-col px-4 py-8 mx-auto">
         {/* Header */}
         <div className="mb-8">
           <Link href="/classroom">
@@ -80,8 +80,8 @@ export default function CreateClassroomPage() {
           <p className="text-gray-600">Set up a new classroom space for your students</p>
         </div>
 
-        <div className="mx-auto flex flex-col md:flex-row space-y-6 md:space-x-6">
-          <Card className="shadow-xl border-0">
+        <div className="flex flex-col md:flex-row space-y-6 md:space-x-6">
+          <Card className="shadow-none sm:shadow-xl">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <MessageCircle className="w-5 h-5 text-blue-600" />

@@ -1,4 +1,6 @@
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { EllipsisVertical, Reply, Pin, Edit, Trash2 } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
 
 interface Message {
   id: number;
@@ -15,17 +17,41 @@ interface MessageProps {
 }
 
 export default function Message({ messages, messagesEndRef }: MessageProps) {
+  const [openDropdownId, setOpenDropdownId] = useState<number | null>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const toggleDropdown = (messageId: number) => {
+    setOpenDropdownId(openDropdownId === messageId ? null : messageId);
+  };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setOpenDropdownId(null);
+      }
+    };
+
+    if (openDropdownId !== null) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [openDropdownId]);
   return (
     <div className="flex-1 overflow-y-auto p-2 md:p-4 space-y-4 bg-gray-50">
       {messages.map((msg) => (
         <div
           key={msg.id}
-          className={`flex ${
-            msg.isOwn ? "justify-end" : "justify-start"
-          }`}
+          className={`flex ${msg.isOwn ? "justify-end" : "justify-start"}`}
         >
           <div
-            className={`flex items-end space-x-2 max-w-[85%] md:max-w-xs lg:max-w-md ${
+            className={`flex items-end space-x-2 max-w-[85%] md:max-w-xs lg:max-w-md relative ${
               msg.isOwn ? "flex-row-reverse space-x-reverse" : ""
             }`}
           >
@@ -59,6 +85,67 @@ export default function Message({ messages, messagesEndRef }: MessageProps) {
                 {msg.timestamp}
               </p>
             </div>
+            <div className="flex h-full items-center">
+              <EllipsisVertical
+                onClick={() => toggleDropdown(msg.id)}
+                className="w-4 h-4 text-gray-400 cursor-pointer hover:text-gray-600"
+              />
+            </div>
+            {openDropdownId === msg.id && (
+              <div
+                ref={dropdownRef}
+                className={`absolute ${
+                  msg.isOwn ? "left-0" : "right-0"
+                } mt-2 w-32 rounded-md shadow-lg bg-white border-1 focus:outline-none z-50`}
+              >
+                <div className="py-1">
+                  <div
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 cursor-pointer flex items-center space-x-2"
+                    onClick={() => {
+                      // Handle reply functionality
+                      console.log("Reply clicked");
+                    }}
+                  >
+                    <Reply className="w-4 h-4" />
+                    <span>Reply</span>
+                  </div>
+                  <div
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 cursor-pointer flex items-center space-x-2"
+                    onClick={() => {
+                      // Handle pin functionality
+                      setOpenDropdownId(null);
+                    }}
+                  >
+                    <Pin className="w-4 h-4" />
+                    <span>Pin</span>
+                  </div>
+                  <div
+                    className="block px-4 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 cursor-pointer flex items-center space-x-2"
+                    onClick={() => {
+                      // Handle delete functionality
+                      setOpenDropdownId(null);
+                    }}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    <span>Delete</span>
+                  </div>
+                  {msg.isOwn && (
+                    <>
+                      <div
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 cursor-pointer flex items-center space-x-2"
+                        onClick={() => {
+                          // Handle edit functionality
+                          setOpenDropdownId(null);
+                        }}
+                      >
+                        <Edit className="w-4 h-4" />
+                        <span>Edit</span>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       ))}

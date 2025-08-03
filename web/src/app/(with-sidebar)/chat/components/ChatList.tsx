@@ -68,7 +68,7 @@ export default function ChatList({ onChatSelect, selectedChatId }: ChatListProps
             key={chat.id}
             onClick={() => handleChatClick(chat)}
             className={`p-3 border-b border-gray-100 rounded-md cursor-pointer hover:bg-blue-100 transition-colors touch-manipulation ${
-              selectedChatId === chat.id ? "border-x-4 bg-blue-100 border-x-blue-500" : ""
+              selectedChatId === chat.id ? "border-l-4 bg-blue-100 border-x-blue-500" : ""
             }`}
           >
             <div className="flex items-center space-x-3">
