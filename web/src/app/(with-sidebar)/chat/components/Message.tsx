@@ -9,14 +9,16 @@ interface Message {
   timestamp: string;
   avatar: string;
   isOwn: boolean;
+  replyTo?: Message;
 }
 
 interface MessageProps {
   messages: Message[];
   messagesEndRef: React.RefObject<HTMLDivElement>;
+  onReply?: (message: Message) => void;
 }
 
-export default function Message({ messages, messagesEndRef }: MessageProps) {
+export default function Message({ messages, messagesEndRef, onReply }: MessageProps) {
   const [openDropdownId, setOpenDropdownId] = useState<number | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -74,6 +76,23 @@ export default function Message({ messages, messagesEndRef }: MessageProps) {
                   {msg.sender}
                 </p>
               )}
+              
+              {/* Reply Preview in Message */}
+              {msg.replyTo && (
+                <div className={`mb-2 p-2 rounded-md border-l-3 ${
+                  msg.isOwn 
+                    ? "bg-blue-600 border-blue-300 text-blue-300" 
+                    : "bg-gray-100 border-gray-300 text-gray-600"
+                }`}>
+                  <p className="text-xs font-medium mb-1">
+                    {msg.replyTo.sender}
+                  </p>
+                  <p className="text-xs truncate">
+                    {msg.replyTo.content}
+                  </p>
+                </div>
+              )}
+              
               <p className="text-sm break-words whitespace-pre-wrap break-words overflow-wrap break-all">
                 {msg.content}
               </p>
@@ -103,7 +122,8 @@ export default function Message({ messages, messagesEndRef }: MessageProps) {
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 cursor-pointer flex items-center space-x-2"
                     onClick={() => {
                       // Handle reply functionality
-                      console.log("Reply clicked");
+                      onReply?.(msg);
+                      setOpenDropdownId(null);
                     }}
                   >
                     <Reply className="w-4 h-4" />

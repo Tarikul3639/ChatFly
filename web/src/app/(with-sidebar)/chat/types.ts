@@ -22,6 +22,7 @@ export interface MessageType {
   timestamp: string;
   avatar: string;
   isOwn: boolean;
+  replyTo?: MessageType;
 }
 
 export interface User {

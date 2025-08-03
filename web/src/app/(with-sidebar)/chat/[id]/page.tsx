@@ -5,6 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import MessageInput from "../components/MessageInput";
 import Message from "../components/Message";
 import ChatHeader from "../components/ChatHeader";
+import ReplyPreview from "../components/ReplyPreview";
 import { Chat, MessageType, chats, sampleMessages } from "../types";
 
 export default function ChatConversationPage() {
@@ -12,6 +13,7 @@ export default function ChatConversationPage() {
   const [showAISuggestions, setShowAISuggestions] = useState(false);
   const [message, setMessage] = useState("");
   const [isRecording, setIsRecording] = useState(false);
+  const [replyingTo, setReplyingTo] = useState<MessageType | null>(null);
   const router = useRouter();
   const params = useParams();
   const messagesEndRef = useRef<HTMLDivElement>(null!);
@@ -48,10 +50,12 @@ export default function ChatConversationPage() {
       timestamp: currentTime,
       avatar: "YU",
       isOwn: true,
+      replyTo: replyingTo || undefined,
     };
 
     setMessages([...messages, newMessage]);
     setMessage("");
+    setReplyingTo(null); // Clear reply after sending
     textareaRef?.current?.focus();
   };
 
@@ -59,6 +63,17 @@ export default function ChatConversationPage() {
     setMessage(suggestion);
     setShowAISuggestions(false);
     textareaRef?.current?.focus();
+  };
+
+  // Handle reply to message
+  const handleReply = (messageToReply: MessageType) => {
+    setReplyingTo(messageToReply);
+    textareaRef?.current?.focus();
+  };
+
+  // Cancel reply
+  const cancelReply = () => {
+    setReplyingTo(null);
   };
 
   // Find and set selected chat based on URL parameter
@@ -97,10 +112,22 @@ export default function ChatConversationPage() {
       <ChatHeader selectedChat={selectedChat} onBack={handleBackToList} />
 
       {/* Messages */}
-      <Message messages={messages} messagesEndRef={messagesEndRef} />
+      <Message 
+        messages={messages} 
+        messagesEndRef={messagesEndRef} 
+        onReply={handleReply}
+      />
 
       {/* Message Input */}
       <div className="flex-none bg-white border-t border-gray-200 safe-area-bottom">
+        {/* Reply Preview */}
+        {replyingTo && (
+          <ReplyPreview 
+            replyingTo={replyingTo} 
+            onCancel={cancelReply} 
+          />
+        )}
+        
         <MessageInput
           message={message}
           setMessage={setMessage}
