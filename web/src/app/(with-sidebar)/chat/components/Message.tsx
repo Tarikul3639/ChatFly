@@ -4,20 +4,14 @@ import { Button } from "@/components/ui/button";
 import {
   EllipsisVertical,
   Reply,
-  Pin,
-  Edit,
-  Trash2,
-  Image,
-  Video,
-  Paperclip,
-  Download,
-  Play,
   CheckCheck,
   LoaderCircle,
   Loader,
   Check,
 } from "lucide-react";
 import React, { useState, useEffect, useRef } from "react";
+import AttachmentDisplay from "./AttachmentDisplay";
+import DropdownMenu from "./DropdownMenu";
 
 interface Message {
   id: number;
@@ -52,19 +46,6 @@ export default function Message({
   const [openDropdownId, setOpenDropdownId] = useState<number | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return "0 Bytes";
-    const k = 1024;
-    const sizes = ["Bytes", "KB", "MB", "GB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
-  };
-
-  const getFileExtension = (filename: string): string => {
-    const ext = filename.split(".").pop()?.toUpperCase();
-    return ext || "FILE";
-  };
-
   const toggleDropdown = (messageId: number) => {
     setOpenDropdownId(openDropdownId === messageId ? null : messageId);
   };
@@ -97,292 +78,6 @@ export default function Message({
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [openDropdownId]);
-
-  // Dropdown Menu Component
-  const DropdownMenu = ({ message }: { message: Message }) => (
-    <div
-      ref={dropdownRef}
-      className={`absolute ${
-        message.isOwn ? "right-0" : "left-0"
-      } mt-2 w-36 rounded-lg shadow-lg bg-white border border-gray-200 focus:outline-none z-50`}
-    >
-      <div className="py-1">
-        <DropdownItem
-          icon={<Reply className="w-4 h-4" />}
-          label="Reply"
-          onClick={() => handleAction(() => onReply?.(message))}
-        />
-        <DropdownItem
-          icon={<Pin className="w-4 h-4" />}
-          label={message.isPinned ? "Unpin" : "Pin"}
-          onClick={() => handleAction(() => onPin?.(message))}
-        />
-        {message.isOwn && (
-          <>
-            <DropdownItem
-              icon={<Edit className="w-4 h-4" />}
-              label="Edit"
-              onClick={() => handleAction(() => onEdit?.(message))}
-            />
-            <DropdownItem
-              icon={<Trash2 className="w-4 h-4" />}
-              label="Delete"
-              onClick={() => handleAction(() => onDelete?.(message.id))}
-              className="text-red-600 hover:bg-red-50 hover:text-red-700"
-            />
-          </>
-        )}
-      </div>
-    </div>
-  );
-
-  // Dropdown Item Component
-  const DropdownItem = ({
-    icon,
-    label,
-    onClick,
-    className = "text-gray-700 hover:bg-gray-100 hover:text-gray-900",
-  }: {
-    icon: React.ReactNode;
-    label: string;
-    onClick: () => void;
-    className?: string;
-  }) => (
-    <div
-      className={`block px-4 py-2 text-sm cursor-pointer flex items-center space-x-2 ${className}`}
-      onClick={onClick}
-    >
-      {icon}
-      <span>{label}</span>
-    </div>
-  );
-
-  // Attachment Display Component
-  const AttachmentDisplay = ({
-    attachments,
-    isOwn,
-  }: {
-    attachments: File[];
-    isOwn: boolean;
-  }) => {
-    const [previewUrls, setPreviewUrls] = useState<{ [key: number]: string }>(
-      {}
-    );
-
-    useEffect(() => {
-      const urls: { [key: number]: string } = {};
-      attachments.forEach((file, index) => {
-        if (file.type.startsWith("image/") || file.type.startsWith("video/")) {
-          urls[index] = URL.createObjectURL(file);
-        }
-      });
-      setPreviewUrls(urls);
-
-      // Cleanup URLs on unmount
-      return () => {
-        Object.values(urls).forEach((url) => URL.revokeObjectURL(url));
-      };
-    }, [attachments]);
-
-    // Separate images, videos, and other files
-    const images = attachments
-      .filter((file, index) => file.type.startsWith("image/"))
-      .map((file, origIndex) => ({ file, index: attachments.indexOf(file) }));
-    const videos = attachments
-      .filter((file, index) => file.type.startsWith("video/"))
-      .map((file, origIndex) => ({ file, index: attachments.indexOf(file) }));
-    const otherFiles = attachments
-      .filter(
-        (file, index) =>
-          !file.type.startsWith("image/") && !file.type.startsWith("video/")
-      )
-      .map((file, origIndex) => ({ file, index: attachments.indexOf(file) }));
-
-    return (
-      <div className="mt-2 space-y-2">
-        {/* Images Grid */}
-        {images.length > 0 && (
-          <div
-            className={`grid gap-1 max-w-xs ${
-              images.length === 1
-                ? "grid-cols-1"
-                : images.length === 2
-                ? "grid-cols-2"
-                : images.length === 3
-                ? "grid-cols-2"
-                : "grid-cols-2"
-            }`}
-          >
-            {images.map(({ file, index }, imgIndex) => (
-              <div
-                key={index}
-                className={`relative rounded-lg overflow-hidden ${
-                  images.length === 3 && imgIndex === 0 ? "col-span-2" : ""
-                }`}
-              >
-                <img
-                  src={previewUrls[index]}
-                  alt={file.name}
-                  className={`w-full object-cover cursor-pointer hover:opacity-90 transition-opacity ${
-                    images.length === 1 ? "max-h-60" : "h-24"
-                  }`}
-                  onClick={() => {
-                    // Open image in full view
-                    const newWindow = window.open();
-                    if (newWindow) {
-                      newWindow.document.write(`
-                        <div style="display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #000;">
-                          <img src="${previewUrls[index]}" style="max-width: 100%; max-height: 100vh; object-fit: contain;">
-                        </div>
-                      `);
-                    }
-                  }}
-                />
-                {images.length === 1 && (
-                  <div
-                    className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t ${
-                      isOwn
-                        ? "from-blue-900/80 to-transparent"
-                        : "from-black/80 to-transparent"
-                    } p-2`}
-                  >
-                    <p className="text-white text-xs font-medium truncate">
-                      {file.name}
-                    </p>
-                    <p className="text-white/80 text-xs">
-                      {formatFileSize(file.size)}
-                    </p>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Videos */}
-        {videos.map(({ file, index }) => (
-          <div
-            key={index}
-            className="relative rounded-lg overflow-hidden max-w-xs group"
-          >
-            <video
-              src={previewUrls[index]}
-              className="w-full h-auto max-h-60 object-cover rounded-lg"
-              controls
-              preload="metadata"
-              poster={previewUrls[index]}
-            >
-              Your browser does not support video playback.
-            </video>
-
-            {/* Play button overlay */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="bg-black/50 rounded-full p-3 backdrop-blur-sm">
-                <Play className="w-6 h-6 text-white fill-white" />
-              </div>
-            </div>
-
-            <div
-              className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t ${
-                isOwn
-                  ? "from-blue-900/80 to-transparent"
-                  : "from-black/80 to-transparent"
-              } p-2 pointer-events-none`}
-            >
-              <p className="text-white text-xs font-medium truncate">
-                {file.name}
-              </p>
-              <p className="text-white/80 text-xs">
-                {formatFileSize(file.size)} • Video
-              </p>
-            </div>
-          </div>
-        ))}
-
-        {/* Other Files */}
-        {otherFiles.map(({ file, index }) => (
-          <div
-            key={index}
-            className={`p-3 rounded-lg border cursor-pointer hover:bg-opacity-80 transition-all hover:shadow-md max-w-xs ${
-              isOwn
-                ? "bg-blue-600/20 border-blue-300/50 hover:bg-blue-600/30"
-                : "bg-white border-gray-200 hover:bg-gray-50 shadow-sm"
-            }`}
-            onClick={() => {
-              // Create download link
-              const url = URL.createObjectURL(file);
-              const a = document.createElement("a");
-              a.href = url;
-              a.download = file.name;
-              a.click();
-              URL.revokeObjectURL(url);
-            }}
-          >
-            <div className="flex items-center space-x-3">
-              <div
-                className={`relative p-2 rounded-lg ${
-                  isOwn ? "bg-blue-500/30" : "bg-gray-100"
-                }`}
-              >
-                <Paperclip
-                  className={`w-5 h-5 ${
-                    isOwn ? "text-blue-200" : "text-gray-600"
-                  }`}
-                />
-                {/* File extension badge */}
-                <div
-                  className={`absolute -top-1 -right-1 px-1 py-0.5 rounded text-xs font-bold text-white text-[8px] ${
-                    isOwn ? "bg-blue-600" : "bg-gray-600"
-                  }`}
-                >
-                  {getFileExtension(file.name)}
-                </div>
-              </div>
-              <div className="flex-1 min-w-0">
-                <p
-                  className={`text-sm font-medium truncate ${
-                    isOwn ? "text-blue-100" : "text-gray-900"
-                  }`}
-                >
-                  {file.name}
-                </p>
-                <div className="flex items-center space-x-1">
-                  <p
-                    className={`text-xs ${
-                      isOwn ? "text-blue-200" : "text-gray-500"
-                    }`}
-                  >
-                    {formatFileSize(file.size)}
-                  </p>
-                  <span
-                    className={`text-xs ${
-                      isOwn ? "text-blue-200" : "text-gray-400"
-                    }`}
-                  >
-                    •
-                  </span>
-                  <div className="flex items-center space-x-1">
-                    <Download
-                      className={`w-3 h-3 ${
-                        isOwn ? "text-blue-200" : "text-gray-500"
-                      }`}
-                    />
-                    <span
-                      className={`text-xs ${
-                        isOwn ? "text-blue-200" : "text-gray-500"
-                      }`}
-                    >
-                      Download
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  };
 
   return (
     <div className="flex-1 overflow-y-auto p-3 md:p-4 space-y-10 bg-gray-50">
@@ -462,7 +157,7 @@ export default function Message({
                 </span>
               </div>
               <div
-                className={`rounded shadow-sm px-4 py-3 relative ${
+                className={`rounded shadow-sm relative ${
                   message.isOwn
                     ? "bg-blue-500 text-white rounded-tr-none"
                     : "bg-white text-gray-900 rounded-bl-none border border-gray-100"
@@ -492,20 +187,20 @@ export default function Message({
                     </p>
                   </div>
                 )}
-
-                {/* Message content */}
-                {message.content && (
-                  <p className="text-sm leading-relaxed break-words whitespace-pre-wrap">
-                    {message.content}
-                  </p>
-                )}
-
+                
                 {/* Attachments */}
                 {message.attachments && message.attachments.length > 0 && (
                   <AttachmentDisplay
                     attachments={message.attachments}
                     isOwn={message.isOwn}
                   />
+                )}
+
+                {/* Message content */}
+                {message.content && (
+                  <p className="text-sm px-4 py-3 leading-relaxed break-words whitespace-pre-wrap">
+                    {message.content}
+                  </p>
                 )}
               </div>
 
@@ -543,9 +238,18 @@ export default function Message({
                   Reply
                 </Button>
               </div>
+
               {/* Dropdown menu */}
               {openDropdownId === message.id && (
-                <DropdownMenu message={message} />
+                <DropdownMenu
+                  message={message}
+                  dropdownRef={dropdownRef}
+                  onReply={onReply}
+                  onPin={onPin}
+                  onEdit={onEdit}
+                  onDelete={onDelete}
+                  handleAction={handleAction}
+                />
               )}
             </div>
           </div>
