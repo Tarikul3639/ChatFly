@@ -1,9 +1,18 @@
 "use client";
 
 import { useRef, useState, useEffect } from "react";
+import EmojiPicker, { EmojiStyle } from "emoji-picker-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Smile, Sparkles, Mic, Send, Paperclip, ThumbsUp, ThumbsDown } from "lucide-react";
+import {
+  Smile,
+  Sparkles,
+  Mic,
+  Send,
+  Paperclip,
+  ThumbsUp,
+  ThumbsDown,
+} from "lucide-react";
 
 interface MessageInputProps {
   message: string;
@@ -29,10 +38,40 @@ export default function MessageInput({
   onAISuggestion,
   textareaRef,
 }: MessageInputProps) {
+  const [emojiPickerVisible, setEmojiPickerVisible] = useState(false);
+  const emojiRef = useRef<HTMLDivElement>(null);
+  const aiSuggestionsRef = useRef<HTMLDivElement>(null);
   const handleVoiceRecord = () => {
     setIsRecording(!isRecording);
     // Add voice recording logic here
   };
+  // Handle click outside to close emoji picker
+useEffect(() => {
+  const handleClickOutside = (event: MouseEvent) => {
+    const node = event.target as Node;
+
+    if (
+      emojiRef.current &&
+      !emojiRef.current.contains(node)
+    ) {
+      setEmojiPickerVisible(false);
+    }
+
+    if (
+      aiSuggestionsRef.current &&
+      !aiSuggestionsRef.current.contains(node)
+    ) {
+      setShowAISuggestions(false);
+    }
+  };
+
+  // use 'click' (bubble phase) instead of 'mouseup'
+  document.addEventListener("mouseup", handleClickOutside);
+  return () => {
+    document.removeEventListener("mouseup", handleClickOutside);
+  };
+}, []);
+
 
   return (
     <div>
@@ -65,7 +104,15 @@ export default function MessageInput({
               <Button
                 size="icon"
                 variant="ghost"
-                className="h-8 w-8 text-gray-500 hover:text-gray-700 hover:bg-gray-300 rounded-full"
+                onClick={(e) => {
+                  setShowAISuggestions(false);
+                  setEmojiPickerVisible(!emojiPickerVisible);
+                }}
+                className={`h-8 w-8 rounded-full transition-all ${
+                  emojiPickerVisible
+                    ? "bg-blue-500 text-white hover:bg-blue-600"
+                    : "text-gray-500 hover:text-blue-600 hover:bg-blue-50"
+                }`}
               >
                 <Smile className="w-4 h-4" />
               </Button>
@@ -74,7 +121,10 @@ export default function MessageInput({
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setShowAISuggestions(!showAISuggestions)}
+                onClick={(e) => {
+                  setEmojiPickerVisible(false);
+                  setShowAISuggestions(!showAISuggestions);
+                }}
                 className={`h-8 px-2 rounded-full transition-all ${
                   showAISuggestions
                     ? "bg-blue-500 text-white hover:bg-blue-600"
@@ -125,9 +175,30 @@ export default function MessageInput({
         </div>
       )}
 
+      {/* Emoji Picker */}
+      {emojiPickerVisible && (
+        <div ref={emojiRef}>
+          <EmojiPicker
+            onEmojiClick={(emoji: { emoji: string }) =>
+              setMessage(message + emoji.emoji)
+            }
+            style={{ width: "100%", border: "none" }}
+            height={400}
+            emojiStyle={EmojiStyle.FACEBOOK}
+            lazyLoadEmojis={true}
+            allowExpandReactions={true}
+            skinTonesDisabled={true}
+            autoFocusSearch={false}
+          />
+        </div>
+      )}
+
       {/* AI Suggestions Bar */}
       {showAISuggestions && (
-        <div className="px-6 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-t border-blue-200">
+        <div
+          ref={aiSuggestionsRef}
+          className="px-6 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-t border-blue-200"
+        >
           <div className="flex items-center space-x-2 mb-2">
             <Sparkles className="w-4 h-4 text-blue-600" />
             <span className="text-sm font-medium text-blue-800">
@@ -135,19 +206,25 @@ export default function MessageInput({
             </span>
           </div>
           <div className="flex flex-wrap gap-2">
-            {aiSuggestions.map((suggestion, index) => (
-              <button
-                key={index}
-                onClick={() => onAISuggestion(suggestion)}
-                className="bg-white border border-blue-200 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:border-blue-300 transition-colors flex flex-center space-x-2"
-              >
-                <span className="text-left">{suggestion}</span>
-                <div className="flex space-x-1">
-                  <ThumbsUp className="w-3 h-3 text-gray-400 hover:text-green-500 cursor-pointer" />
-                  <ThumbsDown className="w-3 h-3 text-gray-400 hover:text-red-500 cursor-pointer" />
-                </div>
-              </button>
-            ))}
+            {aiSuggestions.length > 0 ? (
+              aiSuggestions.map((suggestion, index) => (
+                <button
+                  key={index}
+                  onClick={() => onAISuggestion(suggestion)}
+                  className="bg-white border border-blue-200 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:border-blue-300 transition-colors flex flex-center space-x-2"
+                >
+                  <span className="text-left">{suggestion}</span>
+                  <div className="flex space-x-1">
+                    <ThumbsUp className="w-3 h-3 text-gray-400 hover:text-green-500 cursor-pointer" />
+                    <ThumbsDown className="w-3 h-3 text-gray-400 hover:text-red-500 cursor-pointer" />
+                  </div>
+                </button>
+              ))
+            ) : (
+              <div className="text-gray-500 text-sm">
+                No AI suggestions available
+              </div>
+            )}
           </div>
         </div>
       )}
