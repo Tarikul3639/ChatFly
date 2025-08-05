@@ -480,9 +480,9 @@ export default function ClassroomPage() {
                   <button
                     key={index}
                     onClick={() => handleAISuggestion(suggestion)}
-                    className="bg-white border border-blue-200 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:border-blue-300 transition-colors flex items-center space-x-2"
+                    className="bg-white border border-blue-200 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:border-blue-300 transition-colors flex flex-center space-x-2"
                   >
-                    <span>{suggestion}</span>
+                    <span className="text-left">{suggestion}</span>
                     <div className="flex space-x-1">
                       <ThumbsUp className="w-3 h-3 text-gray-400 hover:text-green-500 cursor-pointer" />
                       <ThumbsDown className="w-3 h-3 text-gray-400 hover:text-red-500 cursor-pointer" />

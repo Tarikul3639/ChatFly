@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 
 interface Message {
@@ -14,7 +15,10 @@ interface ReplyPreviewProps {
   onCancel: () => void;
 }
 
-export default function ReplyPreview({ replyingTo, onCancel }: ReplyPreviewProps) {
+export default function ReplyPreview({
+  replyingTo,
+  onCancel,
+}: ReplyPreviewProps) {
   return (
     <div className="bg-gray-50 border-l-4 border-blue-500 px-4 py-3 mx-4 mb-2 rounded-r-md">
       <div className="flex items-start justify-between">
@@ -24,16 +28,17 @@ export default function ReplyPreview({ replyingTo, onCancel }: ReplyPreviewProps
               Replying to {replyingTo.sender}
             </p>
           </div>
-          <p className="text-sm text-gray-600 truncate">
+          <p className="text-sm text-gray-600 truncate break-words whitespace-pre-wrap overflow-wrap break-all">
             {replyingTo.content}
           </p>
         </div>
-        <button
+        <Button
           onClick={onCancel}
-          className="ml-3 flex-shrink-0 p-1 rounded-full hover:bg-gray-200 transition-colors"
+          variant="ghost"
+          className="ml-3 flex-shrink-0"
         >
           <X className="w-4 h-4 text-gray-500" />
-        </button>
+        </Button>
       </div>
     </div>
   );
