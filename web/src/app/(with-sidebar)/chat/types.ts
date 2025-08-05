@@ -23,6 +23,8 @@ export interface MessageType {
   avatar: string;
   isOwn: boolean;
   replyTo?: MessageType;
+  attachments?: File[];
+  role?: string;
 }
 
 export interface User {
@@ -176,6 +178,7 @@ export const sampleMessages: MessageType[] = [
     timestamp: "10:30 AM",
     avatar: "DS",
     isOwn: false,
+    role: "teacher",
   },
   {
     id: 2,
@@ -184,6 +187,7 @@ export const sampleMessages: MessageType[] = [
     timestamp: "10:32 AM",
     avatar: "YU",
     isOwn: true,
+    role: "student",
   },
   {
     id: 3,
@@ -193,5 +197,33 @@ export const sampleMessages: MessageType[] = [
     timestamp: "10:35 AM",
     avatar: "AJ",
     isOwn: false,
+    role: "admin",
+  },
+  {
+    id: 4,
+    sender: "Prof. Wilson",
+    content: "Great question Alice! Let me break down the chain rule step by step.",
+    timestamp: "10:37 AM",
+    avatar: "PW",
+    isOwn: false,
+    role: "teacher",
+  },
+  {
+    id: 5,
+    sender: "Mike Chen",
+    content: "I have the same question. Thanks for asking Alice!",
+    timestamp: "10:39 AM",
+    avatar: "MC",
+    isOwn: false,
+    role: "student",
+  },
+  {
+    id: 6,
+    sender: "Teaching Assistant",
+    content: "I've shared some additional resources in the files section.",
+    timestamp: "10:42 AM",
+    avatar: "TA",
+    isOwn: false,
+    role: "assistant",
   },
 ];

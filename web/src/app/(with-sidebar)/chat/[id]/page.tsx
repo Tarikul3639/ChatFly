@@ -14,6 +14,7 @@ export default function ChatConversationPage() {
   const [message, setMessage] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   const [replyingTo, setReplyingTo] = useState<MessageType | null>(null);
+  const [attachments, setAttachments] = useState<File[]>([]);
   const router = useRouter();
   const params = useParams();
   const messagesEndRef = useRef<HTMLDivElement>(null!);
@@ -35,7 +36,7 @@ export default function ChatConversationPage() {
 
   // Handle sending message
   const handleSendMessage = () => {
-    if (!message.trim()) return;
+    if (!message.trim() && attachments.length === 0) return;
 
     const currentTime = new Date().toLocaleTimeString([], {
       hour: "2-digit",
@@ -51,10 +52,13 @@ export default function ChatConversationPage() {
       avatar: "YU",
       isOwn: true,
       replyTo: replyingTo || undefined,
+      attachments: attachments.length > 0 ? attachments : undefined,
+      role: "student",
     };
 
     setMessages([...messages, newMessage]);
     setMessage("");
+    setAttachments([]);
     setReplyingTo(null); // Clear reply after sending
     textareaRef?.current?.focus();
   };
@@ -139,6 +143,8 @@ export default function ChatConversationPage() {
           aiSuggestions={aiSuggestions}
           onAISuggestion={handleAISuggestion}
           textareaRef={textareaRef}
+          attachments={attachments}
+          setAttachments={setAttachments}
         />
       </div>
     </div>
