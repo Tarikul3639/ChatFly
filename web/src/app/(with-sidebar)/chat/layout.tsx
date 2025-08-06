@@ -3,8 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { Chat, chats } from "./types";
-import ChatList from "./components/ChatList";
-import Welcome from "./components/Welcome";
+import { ChatList, Welcome } from "@/components/chat";
 
 export default function ChatLayout({
   children,

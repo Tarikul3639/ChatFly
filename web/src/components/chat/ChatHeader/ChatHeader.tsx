@@ -1,20 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ArrowLeft, Phone, Video, MoreHorizontal } from "lucide-react";
-
-interface Chat {
-  id: number;
-  name: string;
-  type: string;
-  avatar: string;
-  online: boolean;
-  members?: number;
-}
-
-interface ChatHeaderProps {
-  selectedChat: Chat;
-  onBack: () => void;
-}
+import { ChatHeaderProps } from "@/types/chat.types";
 
 export default function ChatHeader({ selectedChat, onBack }: ChatHeaderProps) {
   return (

@@ -2,11 +2,11 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
-import MessageInput from "../components/MessageInput";
-import Message from "../components/Message";
-import ChatHeader from "../components/ChatHeader";
-import ReplyPreview from "../components/ReplyPreview";
-import { Chat, MessageType, chats, sampleMessages } from "../types";
+import { MessageInput, ReplyPreview } from "@/components/input";
+import { Message } from "@/components/message";
+import { ChatHeader } from "@/components/chat";
+import { Chat, Message as MessageType } from "@/types";
+import { chats, sampleMessages } from "../types";
 
 export default function ChatConversationPage() {
   const [selectedChat, setSelectedChat] = useState<Chat | null>(null);

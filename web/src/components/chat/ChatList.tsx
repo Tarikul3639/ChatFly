@@ -10,7 +10,8 @@ import {
   Search,
   Plus,
 } from "lucide-react"
-import { Chat, ChatWithMessages, chatsWithMessages } from "../types"
+import { Chat } from "@/types";
+import { ChatWithMessages, chatsWithMessages } from "../../app/(with-sidebar)/chat/types"
 
 interface ChatListProps {
   onChatSelect?: (chat: Chat) => void
@@ -30,12 +31,22 @@ export default function ChatList({ onChatSelect, selectedChatId }: ChatListProps
     chat.lastMessage.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
-  const handleChatClick = (chat: Chat) => {
+  const handleChatClick = (chat: ChatWithMessages) => {
+    // Convert ChatWithMessages to Chat for the callback
+    const chatForCallback: Chat = {
+      id: chat.id,
+      name: chat.name,
+      type: chat.type,
+      avatar: chat.avatar,
+      online: chat.online,
+      members: chat.members,
+    };
+    
     if (onChatSelect) {
-      onChatSelect(chat)
+      onChatSelect(chatForCallback);
     }
     // Update URL with chat ID using dynamic route
-    router.push(`/chat/${chat.id}`)
+    router.push(`/chat/${chat.id}`);
   }
 
   return (

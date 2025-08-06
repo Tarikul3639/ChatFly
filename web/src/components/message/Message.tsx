@@ -5,35 +5,11 @@ import {
   EllipsisVertical,
   Reply,
   CheckCheck,
-  LoaderCircle,
-  Loader,
-  Check,
 } from "lucide-react";
 import React, { useState, useEffect, useRef } from "react";
+import { MessageProps, Message as MessageType } from "@/types/message.types";
 import AttachmentDisplay from "./AttachmentDisplay";
 import DropdownMenu from "./DropdownMenu";
-
-interface Message {
-  id: number;
-  sender: string;
-  content: string;
-  timestamp: string;
-  avatar: string;
-  isOwn: boolean;
-  replyTo?: Message;
-  isPinned?: boolean;
-  attachments?: File[];
-  role?: string;
-}
-
-interface MessageProps {
-  messages: Message[];
-  messagesEndRef: React.RefObject<HTMLDivElement>;
-  onReply?: (message: Message) => void;
-  onPin?: (message: Message) => void;
-  onEdit?: (message: Message) => void;
-  onDelete?: (messageId: number) => void;
-}
 
 export default function Message({
   messages,
@@ -112,16 +88,7 @@ export default function Message({
                 {/* Message status */}
                 {message.isOwn && (
                   <div className="w-5 h-5 flex items-center justify-center text-center text-blue-600">
-                    {/* Message delivered */}
-                    {message.isOwn && <CheckCheck className="w-4 h-4" />}
-                    {/* Message sending */}
-                    {/* {message.isOwn && (
-                          <LoaderCircle className="w-4 h-4 animate-spin" />
-                        )} */}
-                    {/* Message send status */}
-                    {/* {message.isOwn && (
-                          <Check className="w-4 h-4" />
-                        )} */}
+                    <CheckCheck className="w-4 h-4" />
                   </div>
                 )}
 
