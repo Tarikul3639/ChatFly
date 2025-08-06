@@ -17,10 +17,10 @@ export default function ReplyPreview({
 
   return (
     <div
-      className={`p-2 m-1 rounded-lg border-l-4 cursor-pointer transition-all duration-200 ${
+      className={`p-2 m-1 rounded-sm border-l-4 cursor-pointer transition-all duration-200 ${
         message.isOwn
-          ? "bg-black/30 border-blue-400 text-blue-100"
-          : "bg-gray-100 border-gray-400 text-gray-600"
+          ? "bg-blue-600 border-blue-200 text-blue-100"
+          : "bg-gray-100 border-gray-500 text-gray-600"
       }`}
       onClick={() => onScrollToMessage(message.replyTo!.id)}
       title="Click to scroll to original message"

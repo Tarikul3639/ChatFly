@@ -3,7 +3,7 @@
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { EllipsisVertical, Reply, CheckCheck } from "lucide-react";
+import { EllipsisVertical, Reply, CheckCheck, Pin } from "lucide-react";
 import React, { useState, useEffect, useRef } from "react";
 import { MessageProps } from "@/types/message.types";
 import AttachmentDisplay from "./AttachmentDisplay";
@@ -86,7 +86,7 @@ export default function Message({
 
   return (
     <div
-      className="flex-1 overflow-y-auto p-3 md:p-4 space-y-10 bg-gray-50"
+      className="flex-1 overflow-y-auto p-3 md:p-4 space-y-2 bg-gray-50"
       suppressHydrationWarning
     >
       {messages.map((message) => (
@@ -168,14 +168,16 @@ export default function Message({
               <div
                 className={`rounded shadow-sm relative ${
                   message.isOwn
-                    ? "bg-blue-500 text-white rounded-tr-none"
+                    ? "bg-blue-500 text-white rounded-tr-none border border-blue-400"
                     : "bg-white text-gray-900 rounded-bl-none border border-gray-100"
-                } ${message.isPinned ? "ring-2 ring-yellow-400/50" : ""}`}
+                } ${message.isPinned ? message.isOwn ? "ring-2 ring-yellow-400":"ring-2 ring-yellow-400/50" : ""}`}
               >
                 {/* Pin indicator */}
                 {message.isPinned && (
-                  <div className="absolute -top-2 -right-2">
-                    <div className="bg-yellow-400 text-yellow-900 text-xs px-1.5 py-0.5 rounded-full shadow-sm"></div>
+                  <div className={`absolute -top-4 ${message.isOwn ? "-left-4 -rotate-40 text-yellow-500" : "-right-4 rotate-40 text-yellow-500" }`}>
+                    <div className="text-xs px-1.5 py-0.5 rounded-full">
+                      <Pin className="w-3 h-3" />
+                    </div>
                   </div>
                 )}
 
@@ -195,7 +197,7 @@ export default function Message({
 
                 {/* Message content */}
                 {message.content && (
-                  <p className="text-sm px-4 py-3 leading-relaxed  break-words whitespace-pre-wrap break-words overflow-wrap break-all">
+                  <p className="text-sm px-4 py-2 leading-relaxed  break-words whitespace-pre-wrap break-words overflow-wrap break-all">
                     {message.content}
                   </p>
                 )}

@@ -25,6 +25,7 @@ export interface MessageType {
   replyTo?: MessageType;
   attachments?: File[];
   role?: string;
+  isPinned?: boolean;
 }
 
 export interface User {
@@ -179,6 +180,7 @@ export const sampleMessages: MessageType[] = [
     avatar: "DS",
     isOwn: false,
     role: "teacher",
+    isPinned: true,
   },
   {
     id: 2,
@@ -207,6 +209,15 @@ export const sampleMessages: MessageType[] = [
     avatar: "PW",
     isOwn: false,
     role: "teacher",
+    replyTo: {
+      id: 3,
+      sender: "Alice Johnson",
+      content: "Could you explain the chain rule again? I'm still confused about it.",
+      timestamp: "10:35 AM",
+      avatar: "AJ",
+      isOwn: false,
+      role: "admin",
+    },
   },
   {
     id: 5,
@@ -216,6 +227,15 @@ export const sampleMessages: MessageType[] = [
     avatar: "MC",
     isOwn: false,
     role: "student",
+    replyTo: {
+      id: 3,
+      sender: "Alice Johnson",
+      content: "Could you explain the chain rule again? I'm still confused about it.",
+      timestamp: "10:35 AM",
+      avatar: "AJ",
+      isOwn: false,
+      role: "admin",
+    },
   },
   {
     id: 6,
@@ -225,5 +245,43 @@ export const sampleMessages: MessageType[] = [
     avatar: "TA",
     isOwn: false,
     role: "assistant",
+    isPinned: true,
+  },
+  {
+    id: 7,
+    sender: "You",
+    content: "These resources are very helpful! Thank you so much.",
+    timestamp: "10:45 AM",
+    avatar: "YU",
+    isOwn: true,
+    role: "student",
+    replyTo: {
+      id: 6,
+      sender: "Teaching Assistant",
+      content: "I've shared some additional resources in the files section.",
+      timestamp: "10:42 AM",
+      avatar: "TA",
+      isOwn: false,
+      role: "assistant",
+    },
+    isPinned: true,
+  },
+  {
+    id: 8,
+    sender: "Dr. Smith",
+    content: "Perfect! I'm glad everyone is engaged. Any other questions?",
+    timestamp: "10:48 AM",
+    avatar: "DS",
+    isOwn: false,
+    role: "teacher",
+    replyTo: {
+      id: 7,
+      sender: "You",
+      content: "These resources are very helpful! Thank you so much.",
+      timestamp: "10:45 AM",
+      avatar: "YU",
+      isOwn: true,
+      role: "student",
+    },
   },
 ];

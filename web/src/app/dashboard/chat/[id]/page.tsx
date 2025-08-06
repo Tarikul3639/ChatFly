@@ -79,6 +79,22 @@ export default function ChatConversationPage() {
   const cancelReply = () => {
     setReplyingTo(null);
   };
+  // Handle delete message
+  const handleDeleteMessage = (messageId: number) => {
+    setMessages(messages.filter((msg) => msg.id !== messageId));
+  }
+  // Handle edit message
+  const handleEditMessage = (message: MessageType) => {
+    setMessages(messages.map((msg) => 
+      msg.id === message.id ? { ...msg, content: message.content } : msg
+    ));
+  }
+  // Handle pin message
+  const handlePinMessage = (message: MessageType) => {
+    setMessages(messages.map((msg) => 
+      msg.id === message.id ? { ...msg, isPinned: !msg.isPinned } : msg
+    ));
+  }
 
   // Find and set selected chat based on URL parameter
   useEffect(() => {
@@ -120,6 +136,9 @@ export default function ChatConversationPage() {
         messages={messages} 
         messagesEndRef={messagesEndRef} 
         onReply={handleReply}
+        onDelete={handleDeleteMessage}
+        onEdit={handleEditMessage}
+        onPin={handlePinMessage}
       />
 
       {/* Message Input */}
