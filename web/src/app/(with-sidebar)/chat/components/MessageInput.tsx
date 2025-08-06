@@ -14,8 +14,8 @@ import {
   ThumbsDown,
   Image,
   Video,
-  X,
 } from "lucide-react";
+import AttachmentPreview from "./AttachmentPreview";
 
 interface MessageInputProps {
   message: string;
@@ -47,27 +47,62 @@ export default function MessageInput({
 }: MessageInputProps) {
   const [emojiPickerVisible, setEmojiPickerVisible] = useState(false);
   const [showAttachmentMenu, setShowAttachmentMenu] = useState(false);
+  const [activeInputType, setActiveInputType] = useState<'none' | 'image' | 'video' | 'file' | 'voice'>('none');
   const emojiRef = useRef<HTMLDivElement>(null);
   const aiSuggestionsRef = useRef<HTMLDivElement>(null);
   const attachmentMenuRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const handleVoiceRecord = () => {
-    setIsRecording(!isRecording);
+    if (activeInputType === 'none' || activeInputType === 'voice') {
+      setActiveInputType(isRecording ? 'none' : 'voice');
+      setIsRecording(!isRecording);
+      // Close other inputs
+      setEmojiPickerVisible(false);
+      setShowAISuggestions(false);
+      setShowAttachmentMenu(false);
+    }
     // Add voice recording logic here
   };
 
   const handleFileSelect = (acceptType: string) => {
-    if (fileInputRef.current) {
-      fileInputRef.current.accept = acceptType;
-      fileInputRef.current.click();
+    let inputType: 'image' | 'video' | 'file' = 'file';
+    
+    if (acceptType === 'image/*') inputType = 'image';
+    else if (acceptType === 'video/*') inputType = 'video';
+    else inputType = 'file';
+
+    if (activeInputType === 'none' || activeInputType === inputType) {
+      setActiveInputType(inputType);
+      
+      if (fileInputRef.current) {
+        fileInputRef.current.accept = acceptType;
+        fileInputRef.current.click();
+      }
+      setShowAttachmentMenu(false);
+      
+      // Close other inputs
+      setEmojiPickerVisible(false);
+      setShowAISuggestions(false);
     }
-    setShowAttachmentMenu(false);
   };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
     if (files.length > 0 && setAttachments) {
-      setAttachments([...attachments, ...files]);
+      // Filter files based on active input type
+      let filteredFiles = files;
+      
+      if (activeInputType === 'image') {
+        filteredFiles = files.filter(file => file.type.startsWith('image/'));
+      } else if (activeInputType === 'video') {
+        filteredFiles = files.filter(file => file.type.startsWith('video/'));
+      } else if (activeInputType === 'file') {
+        filteredFiles = files.filter(file => 
+          !file.type.startsWith('image/') && !file.type.startsWith('video/')
+        );
+      }
+      
+      setAttachments([...attachments, ...filteredFiles]);
     }
     // Reset the input value to allow selecting the same file again
     if (fileInputRef.current) {
@@ -79,16 +114,35 @@ export default function MessageInput({
     if (setAttachments) {
       const newAttachments = attachments.filter((_, i) => i !== index);
       setAttachments(newAttachments);
+      
+      // Reset active input type if no attachments left
+      if (newAttachments.length === 0) {
+        setActiveInputType('none');
+      }
     }
   };
 
-  const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-  };
+  // Check current attachment types to maintain active input type
+  useEffect(() => {
+    if (attachments.length > 0) {
+      const hasImages = attachments.some(file => file.type.startsWith('image/'));
+      const hasVideos = attachments.some(file => file.type.startsWith('video/'));
+      const hasFiles = attachments.some(file => 
+        !file.type.startsWith('image/') && !file.type.startsWith('video/')
+      );
+      
+      if (hasImages && !hasVideos && !hasFiles) {
+        setActiveInputType('image');
+      } else if (hasVideos && !hasImages && !hasFiles) {
+        setActiveInputType('video');
+      } else if (hasFiles && !hasImages && !hasVideos) {
+        setActiveInputType('file');
+      }
+    } else if (!isRecording) {
+      setActiveInputType('none');
+    }
+  }, [attachments, isRecording]);
+
   // Handle click outside to close emoji picker
 useEffect(() => {
   const handleClickOutside = (event: MouseEvent) => {
@@ -127,76 +181,11 @@ useEffect(() => {
   return (
     <div>
       {/* Attachments Preview */}
-      {attachments.length > 0 && (
-        <div className="max-w-4xl mx-auto px-2 md:px-4 mb-2">
-          <div className="bg-gray-50 rounded-lg p-3">
-            <div className="flex flex-wrap gap-2">
-              {attachments.map((file, index) => (
-                <div
-                  key={index}
-                  className="relative bg-white border border-gray-200 rounded-lg overflow-hidden max-w-xs"
-                >
-                  {file.type.startsWith('image/') ? (
-                    <div className="relative">
-                      <img
-                        src={URL.createObjectURL(file)}
-                        alt={file.name}
-                        className="w-full h-20 object-cover"
-                      />
-                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-1">
-                        <p className="text-white text-xs font-medium truncate">
-                          {file.name}
-                        </p>
-                      </div>
-                    </div>
-                  ) : file.type.startsWith('video/') ? (
-                    <div className="relative">
-                      <video
-                        src={URL.createObjectURL(file)}
-                        className="w-full h-20 object-cover"
-                        muted
-                      />
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="bg-black/50 rounded-full p-1">
-                          <Video className="w-4 h-4 text-white" />
-                        </div>
-                      </div>
-                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-1">
-                        <p className="text-white text-xs font-medium truncate">
-                          {file.name}
-                        </p>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="p-2 flex items-center space-x-2">
-                      <div className="relative">
-                        <Paperclip className="w-4 h-4 text-gray-500" />
-                        <div className="absolute -top-1 -right-1 px-1 py-0.5 rounded text-xs font-bold text-white bg-gray-600 text-[8px]">
-                          {file.name.split('.').pop()?.toUpperCase() || 'FILE'}
-                        </div>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900 truncate">
-                          {file.name}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          {formatFileSize(file.size)}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                  <button
-                    onClick={() => removeAttachment(index)}
-                    className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-red-600 transition-colors"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
+      <AttachmentPreview
+        attachments={attachments}
+        onRemoveAttachment={removeAttachment}
+        setAttachments={setAttachments}
+      />
 
       {/* Hidden file input */}
       <input
@@ -214,13 +203,18 @@ useEffect(() => {
             size="icon"
             variant="ghost"
             onClick={() => {
-              setShowAttachmentMenu(!showAttachmentMenu);
-              setEmojiPickerVisible(false);
-              setShowAISuggestions(false);
+              if (activeInputType === 'none' || activeInputType === 'image' || activeInputType === 'video' || activeInputType === 'file') {
+                setShowAttachmentMenu(!showAttachmentMenu);
+                setEmojiPickerVisible(false);
+                setShowAISuggestions(false);
+              }
             }}
+            disabled={activeInputType === 'voice'}
             className={`text-gray-500 hover:text-gray-700 flex-shrink-0 mb-1 h-9 w-9 transition-all ${
               showAttachmentMenu
                 ? "bg-blue-500 text-white hover:bg-blue-600"
+                : activeInputType === 'voice'
+                ? "opacity-50 cursor-not-allowed"
                 : "hover:bg-gray-100"
             }`}
           >
@@ -235,24 +229,42 @@ useEffect(() => {
             >
               <button
                 onClick={() => handleFileSelect('image/*')}
-                className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center space-x-2"
+                disabled={activeInputType !== 'none' && activeInputType !== 'image'}
+                className={`w-full px-4 py-2 text-left text-sm flex items-center space-x-2 ${
+                  activeInputType !== 'none' && activeInputType !== 'image'
+                    ? "text-gray-400 cursor-not-allowed opacity-50"
+                    : "text-gray-700 hover:bg-gray-100"
+                }`}
               >
-                <Image className="w-4 h-4 text-blue-500" />
+                <Image className={`w-4 h-4 ${activeInputType === 'image' ? 'text-blue-600' : 'text-blue-500'}`} />
                 <span>Image</span>
+                {activeInputType === 'image' && <span className="ml-auto text-xs text-blue-600">Active</span>}
               </button>
               <button
                 onClick={() => handleFileSelect('video/*')}
-                className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center space-x-2"
+                disabled={activeInputType !== 'none' && activeInputType !== 'video'}
+                className={`w-full px-4 py-2 text-left text-sm flex items-center space-x-2 ${
+                  activeInputType !== 'none' && activeInputType !== 'video'
+                    ? "text-gray-400 cursor-not-allowed opacity-50"
+                    : "text-gray-700 hover:bg-gray-100"
+                }`}
               >
-                <Video className="w-4 h-4 text-purple-500" />
+                <Video className={`w-4 h-4 ${activeInputType === 'video' ? 'text-purple-600' : 'text-purple-500'}`} />
                 <span>Video</span>
+                {activeInputType === 'video' && <span className="ml-auto text-xs text-purple-600">Active</span>}
               </button>
               <button
                 onClick={() => handleFileSelect('*/*')}
-                className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center space-x-2"
+                disabled={activeInputType !== 'none' && activeInputType !== 'file'}
+                className={`w-full px-4 py-2 text-left text-sm flex items-center space-x-2 ${
+                  activeInputType !== 'none' && activeInputType !== 'file'
+                    ? "text-gray-400 cursor-not-allowed opacity-50"
+                    : "text-gray-700 hover:bg-gray-100"
+                }`}
               >
-                <Paperclip className="w-4 h-4 text-gray-500" />
+                <Paperclip className={`w-4 h-4 ${activeInputType === 'file' ? 'text-gray-600' : 'text-gray-500'}`} />
                 <span>File</span>
+                {activeInputType === 'file' && <span className="ml-auto text-xs text-gray-600">Active</span>}
               </button>
             </div>
           )}
@@ -315,9 +327,12 @@ useEffect(() => {
                   size="icon"
                   variant="ghost"
                   onClick={handleVoiceRecord}
+                  disabled={activeInputType !== 'none' && activeInputType !== 'voice'}
                   className={`h-8 w-8 rounded-full transition-all ${
                     isRecording
                       ? "bg-red-500 text-white hover:bg-red-600"
+                      : activeInputType !== 'none' && activeInputType !== 'voice'
+                      ? "text-gray-400 cursor-not-allowed opacity-50"
                       : "text-gray-500 hover:text-gray-700 hover:bg-gray-300"
                   }`}
                 >

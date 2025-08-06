@@ -182,7 +182,7 @@ export default function Message({
                     <p className="text-xs font-medium mb-1 opacity-90">
                       {message.replyTo.sender}
                     </p>
-                    <p className="text-xs truncate max-w-full">
+                    <p className="text-xs truncate max-w-full whitespace-pre-wrap break-words overflow-wrap break-all">
                       {message.replyTo.content}
                     </p>
                   </div>
@@ -198,7 +198,7 @@ export default function Message({
 
                 {/* Message content */}
                 {message.content && (
-                  <p className="text-sm px-4 py-3 leading-relaxed break-words whitespace-pre-wrap">
+                  <p className="text-sm px-4 py-3 leading-relaxed  break-words whitespace-pre-wrap break-words overflow-wrap break-all">
                     {message.content}
                   </p>
                 )}
