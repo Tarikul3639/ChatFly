@@ -1,4 +1,3 @@
-// web\src\app\components\Sidebar.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -45,11 +44,11 @@ export default function Sidebar() {
 
   // Set active tab based on current pathname
   useEffect(() => {
-    if (pathname === "/chat") {
+    if (pathname === "/dashboard/chat") {
       setActiveTab("chat");
-    } else if (pathname === "/classroom") {
+    } else if (pathname === "/dashboard/classroom") {
       setActiveTab("classroom");
-    } else if (pathname === "/profile") {
+    } else if (pathname === "/dashboard/profile") {
       setActiveTab("profile");
     }
   }, [pathname]);
@@ -68,7 +67,7 @@ export default function Sidebar() {
               key={item.id}
               onClick={() => {
                 setActiveTab(item.id);
-                router.push(`/${item.id}`);
+                router.push(`/dashboard/${item.id}`);
               }}
               className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
                 activeTab === item.id
@@ -98,7 +97,7 @@ export default function Sidebar() {
               key={item.id}
               onClick={() => {
                 setActiveTab(item.id);
-                router.push(`/${item.id}`);
+                router.push(`/dashboard/${item.id}`);
               }}
               className={`flex flex-col items-center space-y-1 p-2 rounded-lg transition-all ${
                 activeTab === item.id

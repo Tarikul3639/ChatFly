@@ -11,7 +11,7 @@ import {
   Plus,
 } from "lucide-react"
 import { Chat } from "@/types";
-import { ChatWithMessages, chatsWithMessages } from "../../app/(with-sidebar)/chat/types"
+import { ChatWithMessages, chatsWithMessages } from "../../app/dashboard/chat/types"
 
 interface ChatListProps {
   onChatSelect?: (chat: Chat) => void
@@ -46,7 +46,7 @@ export default function ChatList({ onChatSelect, selectedChatId }: ChatListProps
       onChatSelect(chatForCallback);
     }
     // Update URL with chat ID using dynamic route
-    router.push(`/chat/${chat.id}`);
+    router.push(`/dashboard/chat/${chat.id}`);
   }
 
   return (

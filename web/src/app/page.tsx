@@ -98,10 +98,19 @@ export default function LandingPage() {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/auth/signup">
+            <Link href="/dashboard">
               <Button
                 size="lg"
                 className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 px-8 py-3 text-lg"
+              >
+                Open Dashboard
+              </Button>
+            </Link>
+            <Link href="/auth/signup">
+              <Button
+                size="lg" 
+                variant="outline"
+                className="border-blue-200 text-blue-600 hover:bg-blue-50 px-8 py-3 text-lg"
               >
                 Get Started Free
               </Button>

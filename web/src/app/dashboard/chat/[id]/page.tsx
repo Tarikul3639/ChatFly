@@ -31,7 +31,7 @@ export default function ChatConversationPage() {
 
   // Handle back to chat list (mobile)
   const handleBackToList = () => {
-    router.push("/chat");
+    router.push("/dashboard/chat");
   };
 
   // Handle sending message
@@ -89,7 +89,7 @@ export default function ChatConversationPage() {
         setSelectedChat(foundChat);
       } else {
         // If chat not found, redirect to chat list
-        router.push("/chat");
+        router.push("/dashboard/chat");
       }
     }
   }, [params?.id, router]);

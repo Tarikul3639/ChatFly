@@ -23,7 +23,7 @@ export default function ChatLayout({
   // Handle chat selection
   const handleChatSelect = (chat: Chat) => {
     setSelectedChatId(chat.id);
-    router.push(`/chat/${chat.id}`);
+    router.push(`/dashboard/chat/${chat.id}`);
   };
 
   // Update selected chat when URL changes
