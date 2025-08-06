@@ -1,3 +1,5 @@
+"use client";
+
 import { Download, FileText, File, Archive, Music, Image as ImageIcon } from "lucide-react";
 import React from "react";
 
@@ -64,6 +66,9 @@ export default function FileAttachment({
   };
 
   const downloadFile = (file: File) => {
+    // Check if we're in the browser before using DOM APIs
+    if (typeof window === 'undefined') return;
+    
     const url = URL.createObjectURL(file);
     const a = document.createElement("a");
     a.href = url;

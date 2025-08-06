@@ -1,15 +1,14 @@
+"use client";
+
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  EllipsisVertical,
-  Reply,
-  CheckCheck,
-} from "lucide-react";
+import { EllipsisVertical, Reply, CheckCheck } from "lucide-react";
 import React, { useState, useEffect, useRef } from "react";
 import { MessageProps } from "@/types/message.types";
 import AttachmentDisplay from "./AttachmentDisplay";
 import DropdownMenu from "./DropdownMenu";
+import ReplyPreview from "./ReplyPreview";
 
 export default function Message({
   messages,
@@ -20,7 +19,12 @@ export default function Message({
   onDelete,
 }: MessageProps) {
   const [openDropdownId, setOpenDropdownId] = useState<number | null>(null);
+  const [highlightedMessageId, setHighlightedMessageId] = useState<
+    number | null
+  >(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const messageRefs = useRef<{ [key: number]: HTMLDivElement }>({});
+  const highlightTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const toggleDropdown = (messageId: number) => {
     setOpenDropdownId(openDropdownId === messageId ? null : messageId);
@@ -33,6 +37,28 @@ export default function Message({
   const handleAction = (action: () => void) => {
     action();
     closeDropdown();
+  };
+
+  // Function to scroll to original message
+  const scrollToMessage = (messageId: number) => {
+    const messageElement = messageRefs.current[messageId];
+    if (messageElement) {
+      messageElement.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+
+      // Clear existing timeout
+      if (highlightTimeoutRef.current) {
+        clearTimeout(highlightTimeoutRef.current);
+      }
+
+      // Highlight the message temporarily
+      setHighlightedMessageId(messageId);
+      highlightTimeoutRef.current = setTimeout(() => {
+        setHighlightedMessageId(null);
+      }, 2000);
+    }
   };
 
   // Close dropdown when clicking outside
@@ -52,15 +78,31 @@ export default function Message({
 
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
+      if (highlightTimeoutRef.current) {
+        clearTimeout(highlightTimeoutRef.current);
+      }
     };
   }, [openDropdownId]);
 
   return (
-    <div className="flex-1 overflow-y-auto p-3 md:p-4 space-y-10 bg-gray-50">
+    <div
+      className="flex-1 overflow-y-auto p-3 md:p-4 space-y-10 bg-gray-50"
+      suppressHydrationWarning
+    >
       {messages.map((message) => (
         <div
           key={message.id}
-          className={`flex ${message.isOwn ? "justify-end" : "justify-start"}`}
+          ref={(el) => {
+            if (el) messageRefs.current[message.id] = el;
+          }}
+          className={`flex ${
+            message.isOwn ? "justify-end" : "justify-start"
+          } transition-all duration-500 ${
+            highlightedMessageId === message.id
+              ? "bg-gray-200 p-2 rounded-sm"
+              : ""
+          }`}
+          suppressHydrationWarning
         >
           <div
             className={`flex items-end space-x-3 max-w-[85%] md:max-w-sm lg:max-w-md relative ${
@@ -138,22 +180,10 @@ export default function Message({
                 )}
 
                 {/* Reply Preview */}
-                {message.replyTo && (
-                  <div
-                    className={`mb-2 p-2 rounded-lg border-l-4 ${
-                      message.isOwn
-                        ? "bg-blue-600/20 border-blue-300 text-blue-100"
-                        : "bg-gray-100 border-gray-400 text-gray-600"
-                    }`}
-                  >
-                    <p className="text-xs font-medium mb-1 opacity-90">
-                      {message.replyTo.sender}
-                    </p>
-                    <p className="text-xs truncate max-w-full whitespace-pre-wrap break-words overflow-wrap break-all">
-                      {message.replyTo.content}
-                    </p>
-                  </div>
-                )}
+                <ReplyPreview
+                  message={message}
+                  onScrollToMessage={scrollToMessage}
+                />
                 
                 {/* Attachments */}
                 {message.attachments && message.attachments.length > 0 && (

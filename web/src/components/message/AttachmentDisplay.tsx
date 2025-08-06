@@ -1,7 +1,10 @@
+"use client";
+
 import React, { useState, useEffect } from "react";
 import ImageAttachment from "./ImageAttachment";
 import VideoAttachment from "./VideoAttachment";
 import FileAttachment from "./FileAttachment";
+import ClientOnly from "@/components/ui/ClientOnly";
 
 interface AttachmentDisplayProps {
   attachments: File[];
@@ -31,14 +34,24 @@ export default function AttachmentDisplay({
     const urls: { [key: number]: string } = {};
     attachments.forEach((file, index) => {
       if (file.type.startsWith("image/") || file.type.startsWith("video/")) {
-        urls[index] = URL.createObjectURL(file);
+        try {
+          urls[index] = URL.createObjectURL(file);
+        } catch (error) {
+          console.warn('Failed to create object URL for file:', file.name, error);
+        }
       }
     });
     setPreviewUrls(urls);
 
     // Cleanup URLs on unmount
     return () => {
-      Object.values(urls).forEach((url) => URL.revokeObjectURL(url));
+      Object.values(urls).forEach((url) => {
+        try {
+          URL.revokeObjectURL(url);
+        } catch (error) {
+          console.warn('Failed to revoke object URL:', error);
+        }
+      });
     };
   }, [attachments]);
 
@@ -57,30 +70,36 @@ export default function AttachmentDisplay({
     .map((file) => ({ file, index: attachments.indexOf(file) }));
 
   return (
-    <div className="mt-2 p-1 space-y-1">
-      {/* Images */}
-      <ImageAttachment
-        images={images}
-        previewUrls={previewUrls}
-        isOwn={isOwn}
-        formatFileSize={formatFileSize}
-      />
+    <ClientOnly fallback={
+      <div className="mt-2 p-1 space-y-1">
+        <div className="animate-pulse bg-gray-200 h-20 w-full rounded"></div>
+      </div>
+    }>
+      <div className="mt-2 p-1 space-y-1">
+        {/* Images */}
+        <ImageAttachment
+          images={images}
+          previewUrls={previewUrls}
+          isOwn={isOwn}
+          formatFileSize={formatFileSize}
+        />
 
-      {/* Videos */}
-      <VideoAttachment
-        videos={videos}
-        previewUrls={previewUrls}
-        isOwn={isOwn}
-        formatFileSize={formatFileSize}
-      />
+        {/* Videos */}
+        <VideoAttachment
+          videos={videos}
+          previewUrls={previewUrls}
+          isOwn={isOwn}
+          formatFileSize={formatFileSize}
+        />
 
-      {/* Other Files */}
-      <FileAttachment
-        otherFiles={otherFiles}
-        isOwn={isOwn}
-        formatFileSize={formatFileSize}
-        getFileExtension={getFileExtension}
-      />
-    </div>
+        {/* Other Files */}
+        <FileAttachment
+          otherFiles={otherFiles}
+          isOwn={isOwn}
+          formatFileSize={formatFileSize}
+          getFileExtension={getFileExtension}
+        />
+      </div>
+    </ClientOnly>
   );
 }

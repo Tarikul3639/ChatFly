@@ -1,6 +1,6 @@
 {
   "name": "ChatFly",
-  "short_name": "ChatFly",
+  "short_name": "ChatFly", 
   "description": "ChatFly - Your AI Chat Companion",
   "start_url": "/",
   "display": "standalone",
@@ -9,14 +9,9 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "/icons/icon-192.png",
-      "type": "image/png",
-      "sizes": "192x192"
-    },
-    {
-      "src": "/icons/icon-512.png",
-      "type": "image/png",
-      "sizes": "512x512"
+      "src": "/favicon.ico",
+      "type": "image/x-icon",
+      "sizes": "16x16 32x32"
     }
   ]
 }

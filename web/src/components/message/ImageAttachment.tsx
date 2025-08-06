@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import NextImage from "next/image";
 
@@ -15,6 +17,9 @@ export default function ImageAttachment({
   formatFileSize,
 }: ImageAttachmentProps) {
   const openImageFullscreen = (startIndex: number) => {
+    // Check if we're in the browser before using window
+    if (typeof window === 'undefined') return;
+    
     const newWindow = window.open();
     if (newWindow) {
       const imageUrls = images.map(({ index }) => previewUrls[index]);
