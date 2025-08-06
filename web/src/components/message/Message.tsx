@@ -62,18 +62,26 @@ export default function Message({
     const deltaY = Math.abs(touch.clientY - touchStartRef.current.y);
     
     // Only trigger swipe if horizontal movement is greater than vertical
-    if (Math.abs(deltaX) > 30 && deltaY < 50) {
-      // Right swipe (for left-aligned messages) or Left swipe (for right-aligned messages)
+    if (Math.abs(deltaX) > 10 && deltaY < 50) {
       const message = messages.find(m => m.id === messageId);
       if (message) {
-        const isValidSwipe = message.isOwn ? deltaX < -30 : deltaX > 30;
-        if (isValidSwipe) {
+        const isValidDirection = message.isOwn ? deltaX < 0 : deltaX > 0;
+        if (isValidDirection) {
+          // Amplify the drag distance with a multiplier and add some resistance
+          const amplifiedDelta = deltaX * 1; // 1.5x amplification
+          const maxDrag = 80; // Maximum drag distance
+          const resistanceFactor = Math.abs(amplifiedDelta) / maxDrag;
+          const finalOffset = amplifiedDelta * (1 - resistanceFactor * 0.2); // Add resistance
+          
+          setDragOffset(finalOffset);
           setSwipedMessageId(messageId);
         } else {
+          setDragOffset(0);
           setSwipedMessageId(null);
         }
       }
-    } else {
+    } else if (Math.abs(deltaX) <= 10) {
+      setDragOffset(0);
       setSwipedMessageId(null);
     }
   };
@@ -95,17 +103,26 @@ export default function Message({
     const deltaY = Math.abs(e.clientY - touchStartRef.current.y);
     
     // Only trigger swipe if horizontal movement is greater than vertical
-    if (Math.abs(deltaX) > 30 && deltaY < 50) {
+    if (Math.abs(deltaX) > 10 && deltaY < 50) {
       const message = messages.find(m => m.id === messageId);
       if (message) {
-        const isValidSwipe = message.isOwn ? deltaX < -30 : deltaX > 30;
-        if (isValidSwipe) {
+        const isValidDirection = message.isOwn ? deltaX < 0 : deltaX > 0;
+        if (isValidDirection) {
+          // Amplify the drag distance with a multiplier and add some resistance
+          const amplifiedDelta = deltaX * 1.5; // 1.5x amplification
+          const maxDrag = 80; // Maximum drag distance
+          const resistanceFactor = Math.abs(amplifiedDelta) / maxDrag;
+          const finalOffset = amplifiedDelta * (1 - resistanceFactor * 0.3); // Add resistance
+          
+          setDragOffset(finalOffset);
           setSwipedMessageId(messageId);
         } else {
+          setDragOffset(0);
           setSwipedMessageId(null);
         }
       }
-    } else {
+    } else if (Math.abs(deltaX) <= 10) {
+      setDragOffset(0);
       setSwipedMessageId(null);
     }
   };
@@ -114,6 +131,7 @@ export default function Message({
   const handleMouseEnd = (e: React.MouseEvent, messageId: number) => {
     if (!isDraggingRef.current || !touchStartRef.current || !touchMoveRef.current) {
       setSwipedMessageId(null);
+      setDragOffset(0);
       isDraggingRef.current = false;
       touchStartRef.current = null;
       touchMoveRef.current = null;
@@ -124,10 +142,10 @@ export default function Message({
     const deltaY = Math.abs(touchMoveRef.current.y - touchStartRef.current.y);
     
     // Trigger reply if swipe is significant enough
-    if (Math.abs(deltaX) > 60 && deltaY < 50) {
+    if (Math.abs(deltaX) > 40 && deltaY < 50) {
       const message = messages.find(m => m.id === messageId);
       if (message) {
-        const isValidSwipe = message.isOwn ? deltaX < -60 : deltaX > 60;
+        const isValidSwipe = message.isOwn ? deltaX < -40 : deltaX > 40;
         if (isValidSwipe) {
           onReply?.(message);
         }
@@ -136,6 +154,7 @@ export default function Message({
 
     // Reset swipe state
     setSwipedMessageId(null);
+    setDragOffset(0);
     isDraggingRef.current = false;
     touchStartRef.current = null;
     touchMoveRef.current = null;
@@ -145,6 +164,7 @@ export default function Message({
   const handleTouchEnd = (e: React.TouchEvent, messageId: number) => {
     if (!touchStartRef.current || !touchMoveRef.current) {
       setSwipedMessageId(null);
+      setDragOffset(0);
       touchStartRef.current = null;
       touchMoveRef.current = null;
       return;
@@ -154,11 +174,15 @@ export default function Message({
     const deltaY = Math.abs(touchMoveRef.current.y - touchStartRef.current.y);
     
     // Trigger reply if swipe is significant enough
-    if (Math.abs(deltaX) > 60 && deltaY < 50) {
+    if (Math.abs(deltaX) > 40 && deltaY < 50) {
       const message = messages.find(m => m.id === messageId);
       if (message) {
-        const isValidSwipe = message.isOwn ? deltaX < -60 : deltaX > 60;
+        const isValidSwipe = message.isOwn ? deltaX < -40 : deltaX > 40;
         if (isValidSwipe) {
+          // Haptic feedback for mobile devices
+          if (navigator.vibrate) {
+            navigator.vibrate(50);
+          }
           onReply?.(message);
         }
       }
@@ -166,6 +190,7 @@ export default function Message({
 
     // Reset swipe state
     setSwipedMessageId(null);
+    setDragOffset(0);
     touchStartRef.current = null;
     touchMoveRef.current = null;
   };
@@ -206,6 +231,7 @@ export default function Message({
     const handleGlobalMouseUp = () => {
       if (isDraggingRef.current) {
         setSwipedMessageId(null);
+        setDragOffset(0);
         isDraggingRef.current = false;
         touchStartRef.current = null;
         touchMoveRef.current = null;
@@ -272,17 +298,18 @@ export default function Message({
               onMouseUp={(e) => handleMouseEnd(e, message.id)}
               onMouseLeave={() => {
                 setSwipedMessageId(null);
+                setDragOffset(0);
                 isDraggingRef.current = false;
                 touchStartRef.current = null;
                 touchMoveRef.current = null;
               }}
               style={{
                 transform: swipedMessageId === message.id 
-                  ? message.isOwn 
-                    ? 'translateX(-30px)' 
-                    : 'translateX(30px)'
+                  ? `translateX(${dragOffset}px)`
                   : 'translateX(0)',
-                transition: isDraggingRef.current ? 'none' : 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+                transition: isDraggingRef.current || touchStartRef.current 
+                  ? 'none' 
+                  : 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
                 cursor: isDraggingRef.current ? 'grabbing' : 'default'
               }}
             >
@@ -373,11 +400,15 @@ export default function Message({
               </div>
 
               {/* Swipe Reply Indicator */}
-              {swipedMessageId === message.id && (
+              {swipedMessageId === message.id && Math.abs(dragOffset) > 20 && (
                 <div
                   className={`absolute top-1/2 transform -translate-y-1/2 ${
                     message.isOwn ? "-right-12" : "-left-12"
-                  } text-blue-500 opacity-70 pointer-events-none z-10`}
+                  } text-blue-500 pointer-events-none z-10 transition-opacity duration-200`}
+                  style={{
+                    opacity: Math.min(Math.abs(dragOffset) / 60, 1), // Fade in based on drag distance
+                    transform: `translateY(-50%) scale(${Math.min(Math.abs(dragOffset) / 40 * 0.3 + 0.7, 1)})` // Scale up based on drag
+                  }}
                 >
                   <div className="p-2 bg-blue-100 rounded-full shadow-lg">
                     <Reply className="w-5 h-5" />
