@@ -1,7 +1,7 @@
 import { useChat } from '@/hooks/useChat';
 import ChatHeader from './ChatHeader';
 import { Message } from '@/components/message';
-import MessageInput from '@/components/input/MessageInput';
+import MessageInput from '@/components/input/Input';
 import { useRef, useEffect, useState } from 'react';
 
 export default function Chat() {
