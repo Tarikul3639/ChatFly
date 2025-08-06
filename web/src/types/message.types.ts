@@ -9,6 +9,7 @@ export interface Message {
   isPinned?: boolean;
   attachments?: File[];
   role?: string;
+  isEdited?: boolean;
 }
 
 export interface MessageProps {

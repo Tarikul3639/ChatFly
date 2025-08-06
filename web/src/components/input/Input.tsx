@@ -3,7 +3,7 @@
 import { useRef, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Mic, Send, Smile, Sparkles } from "lucide-react";
+import { Mic, Send, Smile, Sparkles, Check } from "lucide-react";
 import AttachmentPreview from "./AttachmentPreview";
 import EmojiPickerComponent from "./EmojiPickerComponent";
 import AISuggestionsComponent from "./AISuggestionsComponent";
@@ -22,6 +22,7 @@ interface MessageInputProps {
   textareaRef: React.RefObject<HTMLTextAreaElement>;
   attachments?: File[];
   setAttachments?: (files: File[]) => void;
+  isEditing?: boolean;
 }
 export default function MessageInput({
   message,
@@ -36,6 +37,7 @@ export default function MessageInput({
   textareaRef,
   attachments = [],
   setAttachments,
+  isEditing = false,
 }: MessageInputProps) {
   const [emojiPickerVisible, setEmojiPickerVisible] = useState(false);
   const [showAttachmentMenu, setShowAttachmentMenu] = useState(false);
@@ -172,14 +174,14 @@ export default function MessageInput({
                 activeInputType === "none" ||
                 activeInputType === "image" ||
                 activeInputType === "video" ||
-                activeInputType === "file"
+                activeInputType === "file" 
               ) {
                 setShowAttachmentMenu(!showAttachmentMenu);
                 setEmojiPickerVisible(false);
                 setShowAISuggestions(false);
               }
             }}
-            disabled={activeInputType === "voice"}
+            disabled={activeInputType === "voice" || isEditing}
           />
 
           {/* Input Container */}
@@ -190,7 +192,7 @@ export default function MessageInput({
                 autoFocus
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                placeholder={"Type a message..."}
+                placeholder={isEditing ? "Edit your message..." : "Type a message..."}
                 className="flex-1 bg-transparent border-0 resize-none min-h-[28px] max-h-[120px] text-sm md:text-base placeholder:text-gray-500 focus-visible:ring-0 focus-visible:ring-offset-0 p-0 leading-6 hide-scrollbar shadow-none break-words overflow-wrap break-all"
                 rows={1}
               />
@@ -263,13 +265,15 @@ export default function MessageInput({
             size="icon"
             className={`rounded-full flex-shrink-0 h-11 w-11 transition-all duration-200 ${
               message.trim() || attachments.length > 0
-                ? "bg-blue-500 hover:bg-blue-600 scale-100 shadow-lg"
+                ? isEditing 
+                  ? "bg-green-500 hover:bg-green-600 scale-100 shadow-lg"
+                  : "bg-blue-500 hover:bg-blue-600 scale-100 shadow-lg"
                 : "bg-gray-300 cursor-not-allowed scale-95"
             }`}
             disabled={!message.trim() && attachments.length === 0}
             onClick={onSend}
           >
-            <Send className="w-5 h-5" />
+            {isEditing ? <Check className="w-5 h-5" /> : <Send className="w-5 h-5" />}
           </Button>
         </div>
 

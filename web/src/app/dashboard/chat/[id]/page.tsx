@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { MessageInput, ReplyPreview } from "@/components/input";
+import { MessageInput, ReplyPreview, EditPreview } from "@/components/input";
 import { Message } from "@/components/message";
 import { ChatHeader } from "@/components/chat";
 import { Chat, Message as MessageType } from "@/types";
@@ -14,6 +14,7 @@ export default function ChatConversationPage() {
   const [message, setMessage] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   const [replyingTo, setReplyingTo] = useState<MessageType | null>(null);
+  const [editingMessage, setEditingMessage] = useState<MessageType | null>(null);
   const [attachments, setAttachments] = useState<File[]>([]);
   const router = useRouter();
   const params = useParams();
@@ -44,22 +45,33 @@ export default function ChatConversationPage() {
       hour12: true,
     });
 
-    const newMessage = {
-      id: messages.length + 1,
-      sender: "You",
-      content: message,
-      timestamp: currentTime,
-      avatar: "YU",
-      isOwn: true,
-      replyTo: replyingTo || undefined,
-      attachments: attachments.length > 0 ? attachments : undefined,
-      role: "student",
-    };
+    if (editingMessage) {
+      // Update existing message
+      setMessages(messages.map((msg) => 
+        msg.id === editingMessage.id 
+          ? { ...msg, content: message.trim(), isEdited: true }
+          : msg
+      ));
+      setEditingMessage(null);
+    } else {
+      // Create new message
+      const newMessage = {
+        id: messages.length + 1,
+        sender: "You",
+        content: message,
+        timestamp: currentTime,
+        avatar: "YU",
+        isOwn: true,
+        replyTo: replyingTo || undefined,
+        attachments: attachments.length > 0 ? attachments : undefined,
+        role: "student",
+      };
+      setMessages([...messages, newMessage]);
+    }
 
-    setMessages([...messages, newMessage]);
     setMessage("");
     setAttachments([]);
-    setReplyingTo(null); // Clear reply after sending
+    setReplyingTo(null);
     textareaRef?.current?.focus();
   };
 
@@ -79,16 +91,23 @@ export default function ChatConversationPage() {
   const cancelReply = () => {
     setReplyingTo(null);
   };
+
+  // Cancel edit
+  const cancelEdit = () => {
+    setEditingMessage(null);
+    setMessage("");
+  };
   // Handle delete message
   const handleDeleteMessage = (messageId: number) => {
     setMessages(messages.filter((msg) => msg.id !== messageId));
   }
   // Handle edit message
-  const handleEditMessage = (message: MessageType) => {
-    setMessages(messages.map((msg) => 
-      msg.id === message.id ? { ...msg, content: message.content } : msg
-    ));
-  }
+  const handleEditMessage = (messageToEdit: MessageType) => {
+    setEditingMessage(messageToEdit);
+    setMessage(messageToEdit.content);
+    setReplyingTo(null); // Clear reply when editing
+    textareaRef?.current?.focus();
+  };
   // Handle pin message
   const handlePinMessage = (message: MessageType) => {
     setMessages(messages.map((msg) => 
@@ -143,8 +162,16 @@ export default function ChatConversationPage() {
 
       {/* Message Input */}
       <div className="flex-none bg-white border-t border-gray-200 safe-area-bottom">
+        {/* Edit Preview */}
+        {editingMessage && (
+          <EditPreview 
+            editingMessage={editingMessage} 
+            onCancel={cancelEdit} 
+          />
+        )}
+        
         {/* Reply Preview */}
-        {replyingTo && (
+        {replyingTo && !editingMessage && (
           <ReplyPreview 
             replyingTo={replyingTo} 
             onCancel={cancelReply} 
@@ -164,6 +191,7 @@ export default function ChatConversationPage() {
           textareaRef={textareaRef}
           attachments={attachments}
           setAttachments={setAttachments}
+          isEditing={!!editingMessage}
         />
       </div>
     </div>

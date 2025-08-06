@@ -163,6 +163,9 @@ export default function Message({
                 )}
                 <span className="text-xs text-gray-500">
                   {message.timestamp}
+                  {message.isEdited && (
+                    <span className="ml-1 text-gray-400 italic">(edited)</span>
+                  )}
                 </span>
               </div>
               <div
