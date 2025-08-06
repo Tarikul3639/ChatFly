@@ -22,9 +22,14 @@ export default function Message({
   const [highlightedMessageId, setHighlightedMessageId] = useState<
     number | null
   >(null);
+  const [swipedMessageId, setSwipedMessageId] = useState<number | null>(null);
+  const [dragOffset, setDragOffset] = useState<number>(0);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const messageRefs = useRef<{ [key: number]: HTMLDivElement }>({});
   const highlightTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+  const touchMoveRef = useRef<{ x: number; y: number } | null>(null);
+  const isDraggingRef = useRef(false);
 
   const toggleDropdown = (messageId: number) => {
     setOpenDropdownId(openDropdownId === messageId ? null : messageId);
@@ -37,6 +42,132 @@ export default function Message({
   const handleAction = (action: () => void) => {
     action();
     closeDropdown();
+  };
+
+  // Handle touch start for swipe
+  const handleTouchStart = (e: React.TouchEvent, messageId: number) => {
+    const touch = e.touches[0];
+    touchStartRef.current = { x: touch.clientX, y: touch.clientY };
+    touchMoveRef.current = null;
+  };
+
+  // Handle touch move for swipe
+  const handleTouchMove = (e: React.TouchEvent, messageId: number) => {
+    if (!touchStartRef.current) return;
+    
+    const touch = e.touches[0];
+    touchMoveRef.current = { x: touch.clientX, y: touch.clientY };
+    
+    const deltaX = touch.clientX - touchStartRef.current.x;
+    const deltaY = Math.abs(touch.clientY - touchStartRef.current.y);
+    
+    // Only trigger swipe if horizontal movement is greater than vertical
+    if (Math.abs(deltaX) > 30 && deltaY < 50) {
+      // Right swipe (for left-aligned messages) or Left swipe (for right-aligned messages)
+      const message = messages.find(m => m.id === messageId);
+      if (message) {
+        const isValidSwipe = message.isOwn ? deltaX < -30 : deltaX > 30;
+        if (isValidSwipe) {
+          setSwipedMessageId(messageId);
+        } else {
+          setSwipedMessageId(null);
+        }
+      }
+    } else {
+      setSwipedMessageId(null);
+    }
+  };
+
+  // Handle mouse start for drag (desktop)
+  const handleMouseStart = (e: React.MouseEvent, messageId: number) => {
+    isDraggingRef.current = true;
+    touchStartRef.current = { x: e.clientX, y: e.clientY };
+    touchMoveRef.current = null;
+  };
+
+  // Handle mouse move for drag (desktop)
+  const handleMouseMove = (e: React.MouseEvent, messageId: number) => {
+    if (!isDraggingRef.current || !touchStartRef.current) return;
+    
+    touchMoveRef.current = { x: e.clientX, y: e.clientY };
+    
+    const deltaX = e.clientX - touchStartRef.current.x;
+    const deltaY = Math.abs(e.clientY - touchStartRef.current.y);
+    
+    // Only trigger swipe if horizontal movement is greater than vertical
+    if (Math.abs(deltaX) > 30 && deltaY < 50) {
+      const message = messages.find(m => m.id === messageId);
+      if (message) {
+        const isValidSwipe = message.isOwn ? deltaX < -30 : deltaX > 30;
+        if (isValidSwipe) {
+          setSwipedMessageId(messageId);
+        } else {
+          setSwipedMessageId(null);
+        }
+      }
+    } else {
+      setSwipedMessageId(null);
+    }
+  };
+
+  // Handle mouse end for drag (desktop)
+  const handleMouseEnd = (e: React.MouseEvent, messageId: number) => {
+    if (!isDraggingRef.current || !touchStartRef.current || !touchMoveRef.current) {
+      setSwipedMessageId(null);
+      isDraggingRef.current = false;
+      touchStartRef.current = null;
+      touchMoveRef.current = null;
+      return;
+    }
+
+    const deltaX = touchMoveRef.current.x - touchStartRef.current.x;
+    const deltaY = Math.abs(touchMoveRef.current.y - touchStartRef.current.y);
+    
+    // Trigger reply if swipe is significant enough
+    if (Math.abs(deltaX) > 60 && deltaY < 50) {
+      const message = messages.find(m => m.id === messageId);
+      if (message) {
+        const isValidSwipe = message.isOwn ? deltaX < -60 : deltaX > 60;
+        if (isValidSwipe) {
+          onReply?.(message);
+        }
+      }
+    }
+
+    // Reset swipe state
+    setSwipedMessageId(null);
+    isDraggingRef.current = false;
+    touchStartRef.current = null;
+    touchMoveRef.current = null;
+  };
+
+  // Handle touch end for swipe
+  const handleTouchEnd = (e: React.TouchEvent, messageId: number) => {
+    if (!touchStartRef.current || !touchMoveRef.current) {
+      setSwipedMessageId(null);
+      touchStartRef.current = null;
+      touchMoveRef.current = null;
+      return;
+    }
+
+    const deltaX = touchMoveRef.current.x - touchStartRef.current.x;
+    const deltaY = Math.abs(touchMoveRef.current.y - touchStartRef.current.y);
+    
+    // Trigger reply if swipe is significant enough
+    if (Math.abs(deltaX) > 60 && deltaY < 50) {
+      const message = messages.find(m => m.id === messageId);
+      if (message) {
+        const isValidSwipe = message.isOwn ? deltaX < -60 : deltaX > 60;
+        if (isValidSwipe) {
+          onReply?.(message);
+        }
+      }
+    }
+
+    // Reset swipe state
+    setSwipedMessageId(null);
+    touchStartRef.current = null;
+    touchMoveRef.current = null;
   };
 
   // Function to scroll to original message
@@ -72,12 +203,24 @@ export default function Message({
       }
     };
 
+    const handleGlobalMouseUp = () => {
+      if (isDraggingRef.current) {
+        setSwipedMessageId(null);
+        isDraggingRef.current = false;
+        touchStartRef.current = null;
+        touchMoveRef.current = null;
+      }
+    };
+
     if (openDropdownId !== null) {
       document.addEventListener("mousedown", handleClickOutside);
     }
 
+    document.addEventListener("mouseup", handleGlobalMouseUp);
+
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("mouseup", handleGlobalMouseUp);
       if (highlightTimeoutRef.current) {
         clearTimeout(highlightTimeoutRef.current);
       }
@@ -119,7 +262,30 @@ export default function Message({
             )}
 
             {/* Message bubble */}
-            <div className="relative group">
+            <div 
+              className="relative group select-none"
+              onTouchStart={(e) => handleTouchStart(e, message.id)}
+              onTouchMove={(e) => handleTouchMove(e, message.id)}
+              onTouchEnd={(e) => handleTouchEnd(e, message.id)}
+              onMouseDown={(e) => handleMouseStart(e, message.id)}
+              onMouseMove={(e) => handleMouseMove(e, message.id)}
+              onMouseUp={(e) => handleMouseEnd(e, message.id)}
+              onMouseLeave={() => {
+                setSwipedMessageId(null);
+                isDraggingRef.current = false;
+                touchStartRef.current = null;
+                touchMoveRef.current = null;
+              }}
+              style={{
+                transform: swipedMessageId === message.id 
+                  ? message.isOwn 
+                    ? 'translateX(-30px)' 
+                    : 'translateX(30px)'
+                  : 'translateX(0)',
+                transition: isDraggingRef.current ? 'none' : 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+                cursor: isDraggingRef.current ? 'grabbing' : 'default'
+              }}
+            >
               <div
                 className={`flex items-center space-x-2 mb-1 ${
                   message.isOwn
@@ -205,6 +371,32 @@ export default function Message({
                   </p>
                 )}
               </div>
+
+              {/* Swipe Reply Indicator */}
+              {swipedMessageId === message.id && (
+                <div
+                  className={`absolute top-1/2 transform -translate-y-1/2 ${
+                    message.isOwn ? "-right-12" : "-left-12"
+                  } text-blue-500 opacity-70 pointer-events-none z-10`}
+                >
+                  <div className="p-2 bg-blue-100 rounded-full shadow-lg">
+                    <Reply className="w-5 h-5" />
+                  </div>
+                </div>
+              )}
+
+              {/* Swipe Hint for first few messages */}
+              {messages.indexOf(message) < 3 && !swipedMessageId && (
+                <div
+                  className={`absolute top-1/2 transform -translate-y-1/2 ${
+                    message.isOwn ? "-right-16" : "-left-16"
+                  } text-gray-400 opacity-40 pointer-events-none z-10 hidden md:block`}
+                >
+                  <div className="text-xs whitespace-nowrap">
+                    {message.isOwn ? "← Swipe to reply" : "Swipe to reply →"}
+                  </div>
+                </div>
+              )}
 
               {/* Action button */}
               <div
