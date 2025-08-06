@@ -7,7 +7,7 @@ import {
   CheckCheck,
 } from "lucide-react";
 import React, { useState, useEffect, useRef } from "react";
-import { MessageProps, Message as MessageType } from "@/types/message.types";
+import { MessageProps } from "@/types/message.types";
 import AttachmentDisplay from "./AttachmentDisplay";
 import DropdownMenu from "./DropdownMenu";
 

@@ -1,6 +1,4 @@
-import { Maximize2 } from "lucide-react";
 import React, { useState, useRef } from "react";
-const ReactPlayer = require('react-player').default;
 
 interface VideoAttachmentProps {
   videos: { file: File; index: number }[];
@@ -17,7 +15,7 @@ export default function VideoAttachment({
 }: VideoAttachmentProps) {
   const [duration, setDuration] = useState<{ [key: number]: number }>({});
   const [isPlaying, setIsPlaying] = useState<{ [key: number]: boolean }>({});
-  const playerRefs = useRef<{ [key: number]: any }>({});
+  const playerRefs = useRef<{ [key: number]: HTMLVideoElement | null }>({});
 
   const formatDuration = (duration: number) => {
     const minutes = Math.floor(duration / 60);
@@ -32,20 +30,23 @@ export default function VideoAttachment({
           key={index}
           className="relative rounded-lg overflow-hidden max-w-sm group bg-gray-900"
         >
-          {/* React Player */}
+          {/* Video Player */}
           <div className="relative">
-            {/* @ts-ignore */}
-            <ReactPlayer
-              ref={(el: any) => {
+            <video
+              ref={(el: HTMLVideoElement | null) => {
                 playerRefs.current[index] = el;
               }}
               src={previewUrls[index]}
-              width="100%"
               controls={true}
               onPlay={() => setIsPlaying(prev => ({ ...prev, [index]: true }))}
               onPause={() => setIsPlaying(prev => ({ ...prev, [index]: false }))}
               onEnded={() => setIsPlaying(prev => ({ ...prev, [index]: false }))}
-              onDuration={(duration: number) => setDuration(prev => ({ ...prev, [index]: duration }))}
+              onLoadedMetadata={() => {
+                const video = playerRefs.current[index];
+                if (video) {
+                  setDuration(prev => ({ ...prev, [index]: video.duration }));
+                }
+              }}
               style={{
                 borderRadius: '8px',
               }}

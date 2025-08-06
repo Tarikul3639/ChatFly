@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
+import NextImage from "next/image";
 
 interface ImageAttachmentProps {
   images: { file: File; index: number }[];
@@ -234,9 +235,11 @@ export default function ImageAttachment({
                 images.length === 3 && imgIndex === 0 ? "col-span-2" : ""
               } ${imgIndex > 3 ? "hidden" : ""}`}
             >
-              <img
+              <NextImage
                 src={previewUrls[index]}
                 alt={file.name}
+                width={200}
+                height={200}
                 className={`${getImageDimensions(
                   images.length,
                   imgIndex

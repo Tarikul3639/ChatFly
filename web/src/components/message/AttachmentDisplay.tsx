@@ -44,17 +44,17 @@ export default function AttachmentDisplay({
 
   // Separate images, videos, and other files
   const images = attachments
-    .filter((file, index) => file.type.startsWith("image/"))
-    .map((file, origIndex) => ({ file, index: attachments.indexOf(file) }));
+    .filter((file) => file.type.startsWith("image/"))
+    .map((file) => ({ file, index: attachments.indexOf(file) }));
   const videos = attachments
-    .filter((file, index) => file.type.startsWith("video/"))
-    .map((file, origIndex) => ({ file, index: attachments.indexOf(file) }));
+    .filter((file) => file.type.startsWith("video/"))
+    .map((file) => ({ file, index: attachments.indexOf(file) }));
   const otherFiles = attachments
     .filter(
-      (file, index) =>
+      (file) =>
         !file.type.startsWith("image/") && !file.type.startsWith("video/")
     )
-    .map((file, origIndex) => ({ file, index: attachments.indexOf(file) }));
+    .map((file) => ({ file, index: attachments.indexOf(file) }));
 
   return (
     <div className="mt-2 p-1 space-y-1">

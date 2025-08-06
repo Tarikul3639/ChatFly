@@ -1,6 +1,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Paperclip, Image, Video, X } from "lucide-react";
+import { Paperclip, Image as ImageIcon, Video, X } from "lucide-react";
+import NextImage from "next/image";
 
 interface AttachmentPreviewProps {
   attachments: File[];
@@ -66,9 +67,11 @@ export default function AttachmentPreview({
               >
                 {file.type.startsWith("image/") ? (
                   <div className="relative">
-                    <img
+                    <NextImage
                       src={URL.createObjectURL(file)}
                       alt={file.name}
+                      width={300}
+                      height={160}
                       className="w-full h-40 object-cover"
                     />
                     <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-1">
@@ -130,7 +133,7 @@ export default function AttachmentPreview({
         {renderFileSection(
           imageFiles,
           "Images",
-          <Image className="w-4 h-4 text-blue-500" />
+          <ImageIcon className="w-4 h-4 text-blue-500" />
         )}
 
         {/* Videos Section */}

@@ -1,9 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 import { Chat } from '@/types/chat.types';
 import { Message } from '@/types/message.types';
 
 export interface UseChatReturn {
-  chats: Chat[];
   selectedChat: Chat | null;
   messages: Message[];
   loading: boolean;
@@ -11,12 +10,10 @@ export interface UseChatReturn {
   selectChat: (chat: Chat) => void;
   sendMessage: (content: string, attachments?: File[]) => Promise<void>;
   deleteMessage: (messageId: number) => Promise<void>;
-  editMessage: (messageId: number, newContent: string) => Promise<void>;
   pinMessage: (messageId: number) => Promise<void>;
 }
 
 export const useChat = (): UseChatReturn => {
-  const [chats, setChats] = useState<Chat[]>([]);
   const [selectedChat, setSelectedChat] = useState<Chat | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
@@ -38,7 +35,9 @@ export const useChat = (): UseChatReturn => {
       
       // For now, using mock data
       setMessages([]);
-    } catch (err) {
+      console.log('Loading messages for chat:', chatId);
+    } catch (error) {
+      console.error('Error loading messages:', error);
       setError('Failed to load messages');
     } finally {
       setLoading(false);
@@ -66,7 +65,8 @@ export const useChat = (): UseChatReturn => {
       //   method: 'POST',
       //   body: JSON.stringify({ content, attachments }),
       // });
-    } catch (err) {
+    } catch (error) {
+      console.error('Error sending message:', error);
       setError('Failed to send message');
     }
   };
@@ -75,21 +75,9 @@ export const useChat = (): UseChatReturn => {
     try {
       setMessages(prev => prev.filter(msg => msg.id !== messageId));
       // API call to delete message
-    } catch (err) {
+    } catch (error) {
+      console.error('Error deleting message:', error);
       setError('Failed to delete message');
-    }
-  };
-
-  const editMessage = async (messageId: number, newContent: string) => {
-    try {
-      setMessages(prev => 
-        prev.map(msg => 
-          msg.id === messageId ? { ...msg, content: newContent } : msg
-        )
-      );
-      // API call to edit message
-    } catch (err) {
-      setError('Failed to edit message');
     }
   };
 
@@ -101,13 +89,13 @@ export const useChat = (): UseChatReturn => {
         )
       );
       // API call to pin message
-    } catch (err) {
+    } catch (error) {
+      console.error('Error pinning message:', error);
       setError('Failed to pin message');
     }
   };
 
   return {
-    chats,
     selectedChat,
     messages,
     loading,
@@ -115,7 +103,6 @@ export const useChat = (): UseChatReturn => {
     selectChat,
     sendMessage,
     deleteMessage,
-    editMessage,
     pinMessage,
   };
 };

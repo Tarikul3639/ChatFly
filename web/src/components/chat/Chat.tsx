@@ -3,6 +3,7 @@ import ChatHeader from './ChatHeader';
 import { Message } from '@/components/message';
 import MessageInput from '@/components/input/Input';
 import { useRef, useEffect, useState } from 'react';
+import { Message as MessageType } from '@/types/message.types';
 
 export default function Chat() {
   const {
@@ -12,7 +13,6 @@ export default function Chat() {
     error,
     sendMessage,
     deleteMessage,
-    editMessage,
     pinMessage,
   } = useChat();
   
@@ -27,16 +27,16 @@ export default function Chat() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const handleReply = (message: any) => {
+  const handleReply = (message: MessageType) => {
     // Handle reply functionality
     console.log('Reply to:', message);
   };
 
-  const handlePin = (message: any) => {
+  const handlePin = (message: MessageType) => {
     pinMessage(message.id);
   };
 
-  const handleEdit = (message: any) => {
+  const handleEdit = (message: MessageType) => {
     // Handle edit - would need additional UI for editing
     console.log('Edit message:', message);
   };

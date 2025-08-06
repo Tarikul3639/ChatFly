@@ -1,4 +1,4 @@
-import { Paperclip, Download, FileText, File, Archive, Music, Image } from "lucide-react";
+import { Download, FileText, File, Archive, Music, Image as ImageIcon } from "lucide-react";
 import React from "react";
 
 interface FileAttachmentProps {
@@ -35,7 +35,7 @@ export default function FileAttachment({
       case 'jpeg':
       case 'png':
       case 'gif':
-        return <Image className="w-5 h-5" />;
+        return <ImageIcon className="w-5 h-5" />;
       default:
         return <File className="w-5 h-5" />;
     }

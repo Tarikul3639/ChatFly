@@ -1,7 +1,6 @@
 "use client";
 
 import { useRef, useEffect } from "react";
-import { Button } from "@/components/ui/button";
 import { Sparkles, ThumbsUp, ThumbsDown } from "lucide-react";
 
 interface AISuggestionsComponentProps {

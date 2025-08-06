@@ -2,7 +2,7 @@
 
 import { useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Paperclip, Image, Video } from "lucide-react";
+import { Paperclip, Image as ImageIcon, Video } from "lucide-react";
 
 interface AttachmentDropdownProps {
   showAttachmentMenu: boolean;
@@ -78,7 +78,7 @@ export default function AttachmentDropdown({
                 : "text-gray-700 hover:bg-gray-100"
             }`}
           >
-            <Image
+            <ImageIcon
               className={`w-4 h-4 ${
                 activeInputType === "image"
                   ? "text-blue-600"
