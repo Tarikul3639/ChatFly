@@ -57,7 +57,7 @@ export default function AttachmentDisplay({
     .map((file, origIndex) => ({ file, index: attachments.indexOf(file) }));
 
   return (
-    <div className="mt-2 p-1">
+    <div className="mt-2 p-1 space-y-1">
       {/* Images */}
       <ImageAttachment
         images={images}

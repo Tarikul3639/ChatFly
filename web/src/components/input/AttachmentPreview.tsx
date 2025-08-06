@@ -84,9 +84,12 @@ export default function AttachmentPreview({
                       className="w-full h-40 object-cover"
                       controls
                     />
-                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-1 pointer-events-none">
+                    <div className="absolute top-1 left-0 right-0 bg-gradient-to-t from-transparent to-black/60 p-1 pointer-events-none">
                       <p className="text-white text-xs font-medium truncate">
                         {file.name}
+                      </p>
+                      <p className="text-white/80 text-xs">
+                        {formatFileSize(file.size)}
                       </p>
                     </div>
                   </div>
