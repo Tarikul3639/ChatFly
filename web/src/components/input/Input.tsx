@@ -8,6 +8,7 @@ import AttachmentPreview from "./AttachmentPreview";
 import EmojiPickerComponent from "./EmojiPickerComponent";
 import AISuggestionsComponent from "./AISuggestionsComponent";
 import AttachmentDropdown from "./AttachmentDropdown";
+import VoiceInputComponent from "./VoiceInputComponent";
 
 interface MessageInputProps {
   message: string;
@@ -45,16 +46,14 @@ export default function MessageInput({
     "none" | "image" | "video" | "file" | "voice"
   >("none");
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const handleVoiceRecord = () => {
-    if (activeInputType === "none" || activeInputType === "voice") {
-      setActiveInputType(isRecording ? "none" : "voice");
-      setIsRecording(!isRecording);
-      // Close other inputs
-      setEmojiPickerVisible(false);
-      setShowAISuggestions(false);
-      setShowAttachmentMenu(false);
+  
+  const handleVoiceComplete = (transcription: string) => {
+    setMessage(transcription);
+    setActiveInputType("none");
+    // Focus back to textarea after voice input
+    if (textareaRef.current) {
+      textareaRef.current.focus();
     }
-    // Add voice recording logic here
   };
 
   const handleFileSelect = (acceptType: string) => {
@@ -145,7 +144,7 @@ export default function MessageInput({
 
   return (
     <>
-      <div>
+      <div className={`transition-opacity duration-300`}>
         {/* Attachments Preview */}
         <AttachmentPreview
           attachments={attachments}
@@ -165,23 +164,24 @@ export default function MessageInput({
         <div className="flex items-end space-x-2 max-w-4xl p-2 md:p-4 mx-auto z-50">
           {/* Attachment Button */}
           <AttachmentDropdown
-            showAttachmentMenu={showAttachmentMenu}
+            showAttachmentMenu={showAttachmentMenu && !isRecording}
             setShowAttachmentMenu={setShowAttachmentMenu}
             activeInputType={activeInputType}
             onFileSelect={handleFileSelect}
             onToggle={() => {
               if (
-                activeInputType === "none" ||
-                activeInputType === "image" ||
-                activeInputType === "video" ||
-                activeInputType === "file" 
+                !isRecording &&
+                (activeInputType === "none" ||
+                  activeInputType === "image" ||
+                  activeInputType === "video" ||
+                  activeInputType === "file")
               ) {
                 setShowAttachmentMenu(!showAttachmentMenu);
                 setEmojiPickerVisible(false);
                 setShowAISuggestions(false);
               }
             }}
-            disabled={activeInputType === "voice" || isEditing}
+            disabled={activeInputType === "voice" || isEditing || isRecording}
           />
 
           {/* Input Container */}
@@ -192,70 +192,77 @@ export default function MessageInput({
                 autoFocus
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                placeholder={isEditing ? "Edit your message..." : "Type a message..."}
+                placeholder={
+                  isRecording
+                    ? "Recording..."
+                    : isEditing
+                    ? "Edit your message..."
+                    : "Type a message..."
+                }
                 className="flex-1 bg-transparent border-0 resize-none min-h-[28px] max-h-[120px] text-sm md:text-base placeholder:text-gray-500 focus-visible:ring-0 focus-visible:ring-offset-0 p-0 leading-6 hide-scrollbar shadow-none break-words overflow-wrap break-all"
                 rows={1}
+                disabled={isRecording}
               />
 
               {/* Right side action buttons */}
               <div className="flex items-center space-x-1 ml-2 flex-shrink-0">
                 {/* Emoji Button */}
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  onClick={() => {
-                    setShowAISuggestions(false);
-                    setShowAttachmentMenu(false);
-                    setEmojiPickerVisible(!emojiPickerVisible);
-                  }}
-                  className={`h-8 w-8 rounded-full transition-all ${
-                    emojiPickerVisible
-                      ? "bg-blue-500 text-white hover:bg-blue-600"
-                      : "text-gray-500 hover:text-blue-600 hover:bg-blue-50"
-                  }`}
-                >
-                  <Smile className="w-4 h-4" />
-                </Button>
-
-                {/* AI Suggestions Button */}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setEmojiPickerVisible(false);
-                    setShowAttachmentMenu(false);
-                    setShowAISuggestions(!showAISuggestions);
-                  }}
-                  className={`h-8 px-2 rounded-full transition-all ${
-                    showAISuggestions
-                      ? "bg-blue-500 text-white hover:bg-blue-600"
-                      : "text-gray-500 hover:text-blue-600 hover:bg-blue-50"
-                  }`}
-                >
-                  <Sparkles className="w-4 h-4" />
-                </Button>
-
-                {/* Voice Record Button (shows when no text) */}
-                {!message.trim() && (
+                {!isRecording && (
                   <Button
                     size="icon"
                     variant="ghost"
-                    onClick={handleVoiceRecord}
-                    disabled={
-                      activeInputType !== "none" && activeInputType !== "voice"
-                    }
+                    onClick={() => {
+                      setShowAISuggestions(false);
+                      setShowAttachmentMenu(false);
+                      setEmojiPickerVisible(!emojiPickerVisible);
+                    }}
                     className={`h-8 w-8 rounded-full transition-all ${
-                      isRecording
-                        ? "bg-red-500 text-white hover:bg-red-600"
-                        : activeInputType !== "none" &&
-                          activeInputType !== "voice"
-                        ? "text-gray-400 cursor-not-allowed opacity-50"
-                        : "text-gray-500 hover:text-gray-700 hover:bg-gray-300"
+                      emojiPickerVisible
+                        ? "bg-blue-500 text-white hover:bg-blue-600"
+                        : "text-gray-500 hover:text-blue-600 hover:bg-blue-50"
                     }`}
                   >
-                    <Mic className="w-4 h-4" />
+                    <Smile className="w-4 h-4" />
                   </Button>
                 )}
+
+                {/* AI Suggestions Button */}
+                {!isRecording && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setEmojiPickerVisible(false);
+                      setShowAttachmentMenu(false);
+                      setShowAISuggestions(!showAISuggestions);
+                    }}
+                    className={`h-8 px-2 rounded-full transition-all ${
+                      showAISuggestions
+                        ? "bg-blue-500 text-white hover:bg-blue-600"
+                        : "text-gray-500 hover:text-blue-600 hover:bg-blue-50"
+                    }`}
+                  >
+                    <Sparkles className="w-4 h-4" />
+                  </Button>
+                )}
+
+                {/* Voice Record Button (shows when no text and not recording) */}
+                <VoiceInputComponent
+                  isRecording={isRecording}
+                  setIsRecording={(recording) => {
+                    setIsRecording(recording);
+                    setActiveInputType(recording ? "voice" : "none");
+                    if (recording) {
+                      setEmojiPickerVisible(false);
+                      setShowAISuggestions(false);
+                      setShowAttachmentMenu(false);
+                    }
+                  }}
+                  onVoiceComplete={handleVoiceComplete}
+                  disabled={
+                    activeInputType !== "none" && activeInputType !== "voice"
+                  }
+                />
               </div>
             </div>
           </div>
@@ -265,7 +272,7 @@ export default function MessageInput({
             size="icon"
             className={`rounded-full flex-shrink-0 h-11 w-11 transition-all duration-200 ${
               message.trim() || attachments.length > 0
-                ? isEditing 
+                ? isEditing
                   ? "bg-green-500 hover:bg-green-600 scale-100 shadow-lg"
                   : "bg-blue-500 hover:bg-blue-600 scale-100 shadow-lg"
                 : "bg-gray-300 cursor-not-allowed scale-95"
@@ -273,30 +280,40 @@ export default function MessageInput({
             disabled={!message.trim() && attachments.length === 0}
             onClick={onSend}
           >
-            {isEditing ? <Check className="w-5 h-5" /> : <Send className="w-5 h-5" />}
+            {isEditing ? (
+              <Check className="w-5 h-5" />
+            ) : (
+              <Send className="w-5 h-5" />
+            )}
           </Button>
         </div>
 
         {/* Character count indicator */}
-        {message.length > 500 && (
+        {message.length > 500 && !isRecording && (
           <div className="text-xs text-gray-400 text-right mt-2 px-2">
             {message.length}/1000
           </div>
         )}
       </div>
-      {/* AI Suggestions Button */}
-      <AISuggestionsComponent
-        showAISuggestions={showAISuggestions}
-        setShowAISuggestions={setShowAISuggestions}
-        aiSuggestions={aiSuggestions}
-        onAISuggestion={onAISuggestion}
-      />
-      {/* Emoji Picker Button */}
-      <EmojiPickerComponent
-        emojiPickerVisible={emojiPickerVisible}
-        setEmojiPickerVisible={setEmojiPickerVisible}
-        onEmojiClick={(emoji) => setMessage(message + emoji)}
-      />
+
+      {/* AI Suggestions - Hidden during recording */}
+      {!isRecording && (
+        <AISuggestionsComponent
+          showAISuggestions={showAISuggestions}
+          setShowAISuggestions={setShowAISuggestions}
+          aiSuggestions={aiSuggestions}
+          onAISuggestion={onAISuggestion}
+        />
+      )}
+
+      {/* Emoji Picker - Hidden during recording */}
+      {!isRecording && (
+        <EmojiPickerComponent
+          emojiPickerVisible={emojiPickerVisible}
+          setEmojiPickerVisible={setEmojiPickerVisible}
+          onEmojiClick={(emoji) => setMessage(message + emoji)}
+        />
+      )}
     </>
   );
 }
