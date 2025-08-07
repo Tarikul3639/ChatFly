@@ -9,7 +9,7 @@ import { MessageProps } from "@/types/message.types";
 import AttachmentDisplay from "./AttachmentDisplay";
 import ActionButton from "./ActionButton";
 import ReplyPreview from "./ReplyPreview";
-import { useSwipeToReply } from "@/hooks/useHoldAndSwipe";
+import { motion, useAnimation } from "framer-motion";
 
 export default function Message({
   messages,
@@ -22,20 +22,13 @@ export default function Message({
   const [highlightedMessageId, setHighlightedMessageId] = useState<
     number | null
   >(null);
-  const [swipedMessageId, setSwipedMessageId] = useState<number | null>(null);
-  const [holdMessageId, setHoldMessageId] = useState<number | null>(null);
-  const [dragOffset, setDragOffset] = useState<number>(0);
-  const messageRefs = useRef<{[key: number]: HTMLDivElement }>({});
+  const [holdMessage, setHoldMessage] = useState<number | null>(null);
+  const [isDragging, setIsDragging] = useState<number | null>(null);
+  const messageRefs = useRef<{ [key: number]: HTMLDivElement }>({});
   const highlightTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  const { handleTouchStart, handleTouchMove, handleTouchEnd, resetSwipeState } =
-    useSwipeToReply({
-      messages,
-      onReply,
-      setSwipedMessageId,
-      setDragOffset,
-      setHoldMessageId,
-    });
+  const holdTimeout = useRef<NodeJS.Timeout | null>(null);
+  const dragStarted = useRef(false);
+  const controls = useAnimation();
 
   // Function to scroll to original message
   const scrollToMessage = (messageId: number) => {
@@ -79,11 +72,78 @@ export default function Message({
           }`}
           suppressHydrationWarning
         >
-          <div
+          <motion.div
+            drag="x"
+            dragConstraints={{ left: -50, right: 50 }}
+            dragElastic={0.2}
+            whileTap={{ scale: 0.98 }}
+            onTapStart={() => {
+              dragStarted.current = false;
+              // Start hold timer
+              holdTimeout.current = setTimeout(() => {
+                if (!dragStarted.current) {
+                  setHoldMessage(message.id); // Only if not dragged
+                }
+              }, 100); // 100ms hold like Messenger
+            }}
+            onDragStart={() => {
+              setIsDragging(message.id);
+              dragStarted.current = true; // Mark drag
+              if (holdTimeout.current) {
+                clearTimeout(holdTimeout.current); // Cancel hold
+              }
+            }}
+            onTapCancel={() => {
+              if (holdTimeout.current) clearTimeout(holdTimeout.current);
+              setHoldMessage(null);
+            }}
+            onTap={() => {
+              if (holdTimeout.current) clearTimeout(holdTimeout.current);
+              setHoldMessage(null);
+            }}
+            onDragEnd={(_, info) => {
+              if (info.offset.x < -40 && message.isOwn) {
+                onReply?.(message);
+                setIsDragging(null);
+              }
+              if (info.offset.x > 40 && !message.isOwn) {
+                onReply?.(message);
+                setIsDragging(null);
+              }
+              controls.start({ x: 0 });
+            }}
+            animate={controls}
+            initial={{ x: 0 }}
+            // Class names for message bubble
             className={`flex items-end space-x-3 max-w-[85%] md:max-w-sm lg:max-w-md relative ${
               message.isOwn ? "flex-row-reverse space-x-reverse" : ""
             }`}
           >
+            {/* Drag handle */}
+            {isDragging === message.id && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.8, y: 10 }}
+                transition={{
+                  duration: 0.2,
+                  ease: "easeOut",
+                  type: "spring",
+                  stiffness: 400,
+                  damping: 25,
+                }}
+                className={`absolute z-10 ${
+                  message.isOwn
+                    ? "-right-12 top-1/2 transform -translate-y-1/2"
+                    : "-left-12 top-1/2 transform -translate-y-1/2"
+                }`}
+              >
+                <div className="flex items-center justify-center w-8 h-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full">
+                  <Reply className="w-4 h-4 text-white transform transition-transform duration-200 hover:scale-110" />
+                </div>
+              </motion.div>
+            )}
+
             {/* Avatar for other's messages */}
             {!message.isOwn && (
               <Avatar className="w-7 h-7 md:w-8 md:h-8 text-sm font-semibold flex-shrink-0">
@@ -94,24 +154,7 @@ export default function Message({
             )}
 
             {/* Message bubble */}
-            <div
-              className="relative group select-none"
-              onTouchStart={(e) => handleTouchStart(e, message.id)}
-              onTouchMove={(e) => handleTouchMove(e, message.id)}
-              onTouchEnd={(e) => handleTouchEnd(e, message.id)}
-              onMouseLeave={() => {
-                resetSwipeState();
-              }}
-              style={{
-                transform:
-                  swipedMessageId === message.id
-                    ? `translateX(${dragOffset}px)`
-                    : "translateX(0)",
-                transition:
-                  "transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
-                cursor: "default",
-              }}
-            >
+            <div className="relative group select-none">
               <div
                 className={`flex items-center space-x-2 mb-1 ${
                   message.isOwn
@@ -210,26 +253,6 @@ export default function Message({
                 )}
               </div>
 
-              {/* Swipe Reply Indicator */}
-              {swipedMessageId === message.id && Math.abs(dragOffset) > 40 && (
-                <div
-                  className={`absolute top-1/2 transform -translate-y-1/2 ${
-                    message.isOwn ? "-right-12" : "-left-12"
-                  } text-blue-500 pointer-events-none z-10 transition-opacity duration-200`}
-                  style={{
-                    opacity: Math.min(Math.abs(dragOffset) / 60, 1), // Fade in based on drag distance
-                    transform: `translateY(-50%) scale(${Math.min(
-                      (Math.abs(dragOffset) / 40) * 0.3 + 0.7,
-                      1
-                    )})`, // Scale up based on drag
-                  }}
-                >
-                  <div className="p-2 bg-blue-100 rounded-full shadow-lg">
-                    <Reply className="w-5 h-5" />
-                  </div>
-                </div>
-              )}
-
               {/* Action button */}
               <ActionButton
                 message={message}
@@ -237,9 +260,9 @@ export default function Message({
                 onPin={onPin}
                 onEdit={onEdit}
                 onDelete={onDelete}
-                forceOpen={holdMessageId === message.id}
+                forceOpen={holdMessage === message.id}
                 onOpenChange={(open: boolean) => {
-                  if (!open) setHoldMessageId(null);
+                  if (!open) setHoldMessage(null);
                 }}
               />
 
@@ -260,7 +283,7 @@ export default function Message({
                 </Button>
               </div>
             </div>
-          </div>
+          </motion.div>
         </div>
       ))}
       <div ref={messagesEndRef} />
