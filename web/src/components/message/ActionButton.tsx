@@ -28,6 +28,8 @@ interface ActionButtonProps {
   onPin?: (message: Message) => void;
   onEdit?: (message: Message) => void;
   onDelete?: (messageId: number) => void;
+  forceOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 export default function ActionButton({
@@ -36,16 +38,32 @@ export default function ActionButton({
   onPin,    
   onEdit,
   onDelete,
+  forceOpen = false,
+  onOpenChange,
 }: ActionButtonProps) {
+  const [isOpen, setIsOpen] = React.useState(false);
+
+  // Handle open state - either from forceOpen prop or internal state
+  const handleOpenChange = (open: boolean) => {
+    setIsOpen(open);
+    onOpenChange?.(open);
+  };
+
+  // Effect to handle forceOpen prop
+  React.useEffect(() => {
+    if (forceOpen) {
+      setIsOpen(true);
+    }
+  }, [forceOpen]);
   return (
     <div
       className={`absolute top-1/2 transform -translate-y-1/2 ${
         message.isOwn ? "-left-10" : "-right-10"
       } sm:opacity-100 group-hover:opacity-100 transition-opacity duration-200`}
     >
-      <DropdownMenu>
+      <DropdownMenu open={isOpen || forceOpen} onOpenChange={handleOpenChange}>
         <DropdownMenuTrigger asChild>
-          <button className="p-1.5 rounded-full transition-colors hover:bg-gray-200 text-gray-400 hover:text-gray-600 focus:outline-none">
+          <button className="p-1.5 rounded-full transition-colors hover:bg-gray-200 text-gray-400 hover:text-gray-600 focus:outline-none opacity-0 sm:opacity-100">
             <EllipsisVertical className="w-4 h-4" />
           </button>
         </DropdownMenuTrigger>

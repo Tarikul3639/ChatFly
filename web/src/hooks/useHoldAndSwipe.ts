@@ -13,22 +13,39 @@ interface UseSwipeToReplyProps {
   onReply?: (message: Message) => void;
   setSwipedMessageId: (id: number | null) => void;
   setDragOffset: (offset: number) => void;
+  setHoldMessageId: (id: number | null) => void;
 }
 
 export const useSwipeToReply = ({
   messages,
   onReply,
   setSwipedMessageId,
+  setHoldMessageId,
   setDragOffset,
 }: UseSwipeToReplyProps): SwipeHandlers => {
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
   const touchMoveRef = useRef<{ x: number; y: number } | null>(null);
+  const holdTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const hasMovedRef = useRef<boolean>(false);
 
   // Handle touch start for swipe
-  const handleTouchStart = (e: React.TouchEvent) => {
+  const handleTouchStart = (e: React.TouchEvent, messageId: number) => {
     const touch = e.touches[0];
     touchStartRef.current = { x: touch.clientX, y: touch.clientY };
     touchMoveRef.current = null;
+    hasMovedRef.current = false;
+    
+    // Clear any existing hold timeout
+    if (holdTimeoutRef.current) {
+      clearTimeout(holdTimeoutRef.current);
+    }
+    
+    // Start hold timer - trigger after 500ms if no significant movement
+    holdTimeoutRef.current = setTimeout(() => {
+      if (!hasMovedRef.current && touchStartRef.current) {
+        setHoldMessageId(messageId);
+      }
+    }, 200);
   };
 
   // Handle touch move for swipe
@@ -40,6 +57,18 @@ export const useSwipeToReply = ({
     
     const deltaX = touch.clientX - touchStartRef.current.x;
     const deltaY = Math.abs(touch.clientY - touchStartRef.current.y);
+
+    // Check if user has moved significantly (cancels hold)
+    if (Math.abs(deltaX) > 5 || deltaY > 5) {
+      hasMovedRef.current = true;
+      // Clear hold timeout if user starts moving
+      if (holdTimeoutRef.current) {
+        clearTimeout(holdTimeoutRef.current);
+        holdTimeoutRef.current = null;
+      }
+      // Clear any existing hold state
+      setHoldMessageId(null);
+    }
     
     // Only trigger swipe if horizontal movement is greater than vertical
     if (Math.abs(deltaX) > 10 && deltaY < 50) {
@@ -68,22 +97,28 @@ export const useSwipeToReply = ({
 
   // Handle touch end for swipe
   const handleTouchEnd = (e: React.TouchEvent, messageId: number) => {
+    // Clear hold timeout
+    if (holdTimeoutRef.current) {
+      clearTimeout(holdTimeoutRef.current);
+      holdTimeoutRef.current = null;
+    }
+
     if (!touchStartRef.current || !touchMoveRef.current) {
       setSwipedMessageId(null);
       setDragOffset(0);
       touchStartRef.current = null;
       touchMoveRef.current = null;
+      hasMovedRef.current = false;
       return;
     }
 
     const deltaX = touchMoveRef.current.x - touchStartRef.current.x;
-    const deltaY = Math.abs(touchMoveRef.current.y - touchStartRef.current.y);
     
     // Trigger reply if swipe is significant enough
-    if (Math.abs(deltaX) > 40 && deltaY < 50) {
+    if (Math.abs(deltaX) > 80) {
       const message = messages.find(m => m.id === messageId);
       if (message) {
-        const isValidSwipe = message.isOwn ? deltaX < -40 : deltaX > 40;
+        const isValidSwipe = message.isOwn ? deltaX < -80 : deltaX > 80;
         if (isValidSwipe) {
           // Haptic feedback for mobile devices
           if (navigator.vibrate) {
@@ -99,13 +134,22 @@ export const useSwipeToReply = ({
     setDragOffset(0);
     touchStartRef.current = null;
     touchMoveRef.current = null;
+    hasMovedRef.current = false;
   };
 
   const resetSwipeState = () => {
+    // Clear hold timeout
+    if (holdTimeoutRef.current) {
+      clearTimeout(holdTimeoutRef.current);
+      holdTimeoutRef.current = null;
+    }
+    
     setSwipedMessageId(null);
     setDragOffset(0);
+    setHoldMessageId(null);
     touchStartRef.current = null;
     touchMoveRef.current = null;
+    hasMovedRef.current = false;
   };
 
   return {

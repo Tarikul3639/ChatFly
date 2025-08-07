@@ -135,7 +135,7 @@
 
 /* Scrollbar Custom Styling */
 ::-webkit-scrollbar {
-  width: 3px; 
+  width: 3px;
   background: transparent;
 }
 
@@ -162,6 +162,10 @@
   scrollbar-width: none;
 }
 
-
-
-
+/* User Select disabled */
+* {
+  -webkit-user-select: none; /* Chrome, Safari */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* IE/Edge */
+  user-select: none; /* Standard */
+}

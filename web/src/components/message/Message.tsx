@@ -9,7 +9,7 @@ import { MessageProps } from "@/types/message.types";
 import AttachmentDisplay from "./AttachmentDisplay";
 import ActionButton from "./ActionButton";
 import ReplyPreview from "./ReplyPreview";
-import { useSwipeToReply } from "@/hooks/useSwipeToReply";
+import { useSwipeToReply } from "@/hooks/useHoldAndSwipe";
 
 export default function Message({
   messages,
@@ -23,8 +23,9 @@ export default function Message({
     number | null
   >(null);
   const [swipedMessageId, setSwipedMessageId] = useState<number | null>(null);
+  const [holdMessageId, setHoldMessageId] = useState<number | null>(null);
   const [dragOffset, setDragOffset] = useState<number>(0);
-  const messageRefs = useRef<{ [key: number]: HTMLDivElement }>({});
+  const messageRefs = useRef<{[key: number]: HTMLDivElement }>({});
   const highlightTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const { handleTouchStart, handleTouchMove, handleTouchEnd, resetSwipeState } =
@@ -33,6 +34,7 @@ export default function Message({
       onReply,
       setSwipedMessageId,
       setDragOffset,
+      setHoldMessageId,
     });
 
   // Function to scroll to original message
@@ -68,7 +70,7 @@ export default function Message({
           ref={(el) => {
             if (el) messageRefs.current[message.id] = el;
           }}
-          className={`flex ${
+          className={`flex overflow-hidden ${
             message.isOwn ? "justify-end" : "justify-start"
           } transition-all duration-500 ${
             highlightedMessageId === message.id
@@ -235,6 +237,10 @@ export default function Message({
                 onPin={onPin}
                 onEdit={onEdit}
                 onDelete={onDelete}
+                forceOpen={holdMessageId === message.id}
+                onOpenChange={(open: boolean) => {
+                  if (!open) setHoldMessageId(null);
+                }}
               />
 
               {/* Reply Button */}
