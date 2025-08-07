@@ -3,12 +3,13 @@
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { EllipsisVertical, Reply, CheckCheck, Pin } from "lucide-react";
-import React, { useState, useEffect, useRef } from "react";
+import { Reply, CheckCheck, Pin } from "lucide-react";
+import React, { useState, useRef } from "react";
 import { MessageProps } from "@/types/message.types";
 import AttachmentDisplay from "./AttachmentDisplay";
-import DropdownMenu from "./DropdownMenu";
+import ActionButton from "./ActionButton";
 import ReplyPreview from "./ReplyPreview";
+import { useSwipeToReply } from "@/hooks/useSwipeToReply";
 
 export default function Message({
   messages,
@@ -18,182 +19,21 @@ export default function Message({
   onEdit,
   onDelete,
 }: MessageProps) {
-  const [openDropdownId, setOpenDropdownId] = useState<number | null>(null);
   const [highlightedMessageId, setHighlightedMessageId] = useState<
     number | null
   >(null);
   const [swipedMessageId, setSwipedMessageId] = useState<number | null>(null);
   const [dragOffset, setDragOffset] = useState<number>(0);
-  const dropdownRef = useRef<HTMLDivElement>(null);
   const messageRefs = useRef<{ [key: number]: HTMLDivElement }>({});
   const highlightTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
-  const touchMoveRef = useRef<{ x: number; y: number } | null>(null);
-  const isDraggingRef = useRef(false);
 
-  const toggleDropdown = (messageId: number) => {
-    setOpenDropdownId(openDropdownId === messageId ? null : messageId);
-  };
-
-  const closeDropdown = () => {
-    setOpenDropdownId(null);
-  };
-
-  const handleAction = (action: () => void) => {
-    action();
-    closeDropdown();
-  };
-
-  // Handle touch start for swipe
-  const handleTouchStart = (e: React.TouchEvent, messageId: number) => {
-    const touch = e.touches[0];
-    touchStartRef.current = { x: touch.clientX, y: touch.clientY };
-    touchMoveRef.current = null;
-  };
-
-  // Handle touch move for swipe
-  const handleTouchMove = (e: React.TouchEvent, messageId: number) => {
-    if (!touchStartRef.current) return;
-    
-    const touch = e.touches[0];
-    touchMoveRef.current = { x: touch.clientX, y: touch.clientY };
-    
-    const deltaX = touch.clientX - touchStartRef.current.x;
-    const deltaY = Math.abs(touch.clientY - touchStartRef.current.y);
-    
-    // Only trigger swipe if horizontal movement is greater than vertical
-    if (Math.abs(deltaX) > 10 && deltaY < 50) {
-      const message = messages.find(m => m.id === messageId);
-      if (message) {
-        const isValidDirection = message.isOwn ? deltaX < 0 : deltaX > 0;
-        if (isValidDirection) {
-          // Amplify the drag distance with a multiplier and add some resistance
-          const amplifiedDelta = deltaX * 1; // 1.5x amplification
-          const maxDrag = 80; // Maximum drag distance
-          const resistanceFactor = Math.abs(amplifiedDelta) / maxDrag;
-          const finalOffset = amplifiedDelta * (1 - resistanceFactor * 0.2); // Add resistance
-          
-          setDragOffset(finalOffset);
-          setSwipedMessageId(messageId);
-        } else {
-          setDragOffset(0);
-          setSwipedMessageId(null);
-        }
-      }
-    } else if (Math.abs(deltaX) <= 10) {
-      setDragOffset(0);
-      setSwipedMessageId(null);
-    }
-  };
-
-  // Handle mouse start for drag (desktop)
-  const handleMouseStart = (e: React.MouseEvent, messageId: number) => {
-    isDraggingRef.current = true;
-    touchStartRef.current = { x: e.clientX, y: e.clientY };
-    touchMoveRef.current = null;
-  };
-
-  // Handle mouse move for drag (desktop)
-  const handleMouseMove = (e: React.MouseEvent, messageId: number) => {
-    if (!isDraggingRef.current || !touchStartRef.current) return;
-    
-    touchMoveRef.current = { x: e.clientX, y: e.clientY };
-    
-    const deltaX = e.clientX - touchStartRef.current.x;
-    const deltaY = Math.abs(e.clientY - touchStartRef.current.y);
-    
-    // Only trigger swipe if horizontal movement is greater than vertical
-    if (Math.abs(deltaX) > 10 && deltaY < 50) {
-      const message = messages.find(m => m.id === messageId);
-      if (message) {
-        const isValidDirection = message.isOwn ? deltaX < 0 : deltaX > 0;
-        if (isValidDirection) {
-          // Amplify the drag distance with a multiplier and add some resistance
-          const amplifiedDelta = deltaX * 1.5; // 1.5x amplification
-          const maxDrag = 80; // Maximum drag distance
-          const resistanceFactor = Math.abs(amplifiedDelta) / maxDrag;
-          const finalOffset = amplifiedDelta * (1 - resistanceFactor * 0.3); // Add resistance
-          
-          setDragOffset(finalOffset);
-          setSwipedMessageId(messageId);
-        } else {
-          setDragOffset(0);
-          setSwipedMessageId(null);
-        }
-      }
-    } else if (Math.abs(deltaX) <= 10) {
-      setDragOffset(0);
-      setSwipedMessageId(null);
-    }
-  };
-
-  // Handle mouse end for drag (desktop)
-  const handleMouseEnd = (e: React.MouseEvent, messageId: number) => {
-    if (!isDraggingRef.current || !touchStartRef.current || !touchMoveRef.current) {
-      setSwipedMessageId(null);
-      setDragOffset(0);
-      isDraggingRef.current = false;
-      touchStartRef.current = null;
-      touchMoveRef.current = null;
-      return;
-    }
-
-    const deltaX = touchMoveRef.current.x - touchStartRef.current.x;
-    const deltaY = Math.abs(touchMoveRef.current.y - touchStartRef.current.y);
-    
-    // Trigger reply if swipe is significant enough
-    if (Math.abs(deltaX) > 40 && deltaY < 50) {
-      const message = messages.find(m => m.id === messageId);
-      if (message) {
-        const isValidSwipe = message.isOwn ? deltaX < -40 : deltaX > 40;
-        if (isValidSwipe) {
-          onReply?.(message);
-        }
-      }
-    }
-
-    // Reset swipe state
-    setSwipedMessageId(null);
-    setDragOffset(0);
-    isDraggingRef.current = false;
-    touchStartRef.current = null;
-    touchMoveRef.current = null;
-  };
-
-  // Handle touch end for swipe
-  const handleTouchEnd = (e: React.TouchEvent, messageId: number) => {
-    if (!touchStartRef.current || !touchMoveRef.current) {
-      setSwipedMessageId(null);
-      setDragOffset(0);
-      touchStartRef.current = null;
-      touchMoveRef.current = null;
-      return;
-    }
-
-    const deltaX = touchMoveRef.current.x - touchStartRef.current.x;
-    const deltaY = Math.abs(touchMoveRef.current.y - touchStartRef.current.y);
-    
-    // Trigger reply if swipe is significant enough
-    if (Math.abs(deltaX) > 40 && deltaY < 50) {
-      const message = messages.find(m => m.id === messageId);
-      if (message) {
-        const isValidSwipe = message.isOwn ? deltaX < -40 : deltaX > 40;
-        if (isValidSwipe) {
-          // Haptic feedback for mobile devices
-          if (navigator.vibrate) {
-            navigator.vibrate(50);
-          }
-          onReply?.(message);
-        }
-      }
-    }
-
-    // Reset swipe state
-    setSwipedMessageId(null);
-    setDragOffset(0);
-    touchStartRef.current = null;
-    touchMoveRef.current = null;
-  };
+  const { handleTouchStart, handleTouchMove, handleTouchEnd, resetSwipeState } =
+    useSwipeToReply({
+      messages,
+      onReply,
+      setSwipedMessageId,
+      setDragOffset,
+    });
 
   // Function to scroll to original message
   const scrollToMessage = (messageId: number) => {
@@ -217,45 +57,9 @@ export default function Message({
     }
   };
 
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        closeDropdown();
-      }
-    };
-
-    const handleGlobalMouseUp = () => {
-      if (isDraggingRef.current) {
-        setSwipedMessageId(null);
-        setDragOffset(0);
-        isDraggingRef.current = false;
-        touchStartRef.current = null;
-        touchMoveRef.current = null;
-      }
-    };
-
-    if (openDropdownId !== null) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-
-    document.addEventListener("mouseup", handleGlobalMouseUp);
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("mouseup", handleGlobalMouseUp);
-      if (highlightTimeoutRef.current) {
-        clearTimeout(highlightTimeoutRef.current);
-      }
-    };
-  }, [openDropdownId]);
-
   return (
     <div
-      className="flex-1 overflow-y-auto p-3 md:p-4 space-y-2 bg-gray-50"
+      className="flex-1 overflow-auto p-3 md:p-4 space-y-2 bg-gray-50"
       suppressHydrationWarning
     >
       {messages.map((message) => (
@@ -288,29 +92,22 @@ export default function Message({
             )}
 
             {/* Message bubble */}
-            <div 
+            <div
               className="relative group select-none"
               onTouchStart={(e) => handleTouchStart(e, message.id)}
               onTouchMove={(e) => handleTouchMove(e, message.id)}
               onTouchEnd={(e) => handleTouchEnd(e, message.id)}
-              onMouseDown={(e) => handleMouseStart(e, message.id)}
-              onMouseMove={(e) => handleMouseMove(e, message.id)}
-              onMouseUp={(e) => handleMouseEnd(e, message.id)}
               onMouseLeave={() => {
-                setSwipedMessageId(null);
-                setDragOffset(0);
-                isDraggingRef.current = false;
-                touchStartRef.current = null;
-                touchMoveRef.current = null;
+                resetSwipeState();
               }}
               style={{
-                transform: swipedMessageId === message.id 
-                  ? `translateX(${dragOffset}px)`
-                  : 'translateX(0)',
-                transition: isDraggingRef.current || touchStartRef.current 
-                  ? 'none' 
-                  : 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-                cursor: isDraggingRef.current ? 'grabbing' : 'default'
+                transform:
+                  swipedMessageId === message.id
+                    ? `translateX(${dragOffset}px)`
+                    : "translateX(0)",
+                transition:
+                  "transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+                cursor: "default",
               }}
             >
               <div
@@ -366,11 +163,23 @@ export default function Message({
                   message.isOwn
                     ? "bg-blue-500 text-white rounded-tr-none border border-blue-400"
                     : "bg-white text-gray-900 rounded-bl-none border border-gray-100"
-                } ${message.isPinned ? message.isOwn ? "ring-2 ring-yellow-400":"ring-2 ring-yellow-400/50" : ""}`}
+                } ${
+                  message.isPinned
+                    ? message.isOwn
+                      ? "ring-2 ring-yellow-400"
+                      : "ring-2 ring-yellow-400/50"
+                    : ""
+                }`}
               >
                 {/* Pin indicator */}
                 {message.isPinned && (
-                  <div className={`absolute -top-4 ${message.isOwn ? "-left-4 -rotate-40 text-yellow-500" : "-right-4 rotate-40 text-yellow-500" }`}>
+                  <div
+                    className={`absolute -top-4 ${
+                      message.isOwn
+                        ? "-left-4 -rotate-40 text-yellow-500"
+                        : "-right-4 rotate-40 text-yellow-500"
+                    }`}
+                  >
                     <div className="text-xs px-1.5 py-0.5 rounded-full">
                       <Pin className="w-3 h-3" />
                     </div>
@@ -382,7 +191,7 @@ export default function Message({
                   message={message}
                   onScrollToMessage={scrollToMessage}
                 />
-                
+
                 {/* Attachments */}
                 {message.attachments && message.attachments.length > 0 && (
                   <AttachmentDisplay
@@ -400,14 +209,17 @@ export default function Message({
               </div>
 
               {/* Swipe Reply Indicator */}
-              {swipedMessageId === message.id && Math.abs(dragOffset) > 20 && (
+              {swipedMessageId === message.id && Math.abs(dragOffset) > 40 && (
                 <div
                   className={`absolute top-1/2 transform -translate-y-1/2 ${
                     message.isOwn ? "-right-12" : "-left-12"
                   } text-blue-500 pointer-events-none z-10 transition-opacity duration-200`}
                   style={{
                     opacity: Math.min(Math.abs(dragOffset) / 60, 1), // Fade in based on drag distance
-                    transform: `translateY(-50%) scale(${Math.min(Math.abs(dragOffset) / 40 * 0.3 + 0.7, 1)})` // Scale up based on drag
+                    transform: `translateY(-50%) scale(${Math.min(
+                      (Math.abs(dragOffset) / 40) * 0.3 + 0.7,
+                      1
+                    )})`, // Scale up based on drag
                   }}
                 >
                   <div className="p-2 bg-blue-100 rounded-full shadow-lg">
@@ -416,36 +228,14 @@ export default function Message({
                 </div>
               )}
 
-              {/* Swipe Hint for first few messages */}
-              {messages.indexOf(message) < 3 && !swipedMessageId && (
-                <div
-                  className={`absolute top-1/2 transform -translate-y-1/2 ${
-                    message.isOwn ? "-right-16" : "-left-16"
-                  } text-gray-400 opacity-40 pointer-events-none z-10 hidden md:block`}
-                >
-                  <div className="text-xs whitespace-nowrap">
-                    {message.isOwn ? "← Swipe to reply" : "Swipe to reply →"}
-                  </div>
-                </div>
-              )}
-
               {/* Action button */}
-              <div
-                className={`absolute top-1/2 transform -translate-y-1/2 ${
-                  message.isOwn ? "-left-10" : "-right-10"
-                } sm:opacity-0 group-hover:opacity-100 transition-opacity duration-200`}
-              >
-                <button
-                  onClick={() => toggleDropdown(message.id)}
-                  className={`p-1.5 rounded-full transition-colors ${
-                    message.isOwn
-                      ? "hover:bg-gray-200 text-gray-600 hover:text-gray-800"
-                      : "hover:bg-gray-100 text-gray-400 hover:text-gray-600"
-                  }`}
-                >
-                  <EllipsisVertical className="w-4 h-4" />
-                </button>
-              </div>
+              <ActionButton
+                message={message}
+                onReply={onReply}
+                onPin={onPin}
+                onEdit={onEdit}
+                onDelete={onDelete}
+              />
 
               {/* Reply Button */}
               <div
@@ -463,19 +253,6 @@ export default function Message({
                   Reply
                 </Button>
               </div>
-
-              {/* Dropdown menu */}
-              {openDropdownId === message.id && (
-                <DropdownMenu
-                  message={message}
-                  dropdownRef={dropdownRef}
-                  onReply={onReply}
-                  onPin={onPin}
-                  onEdit={onEdit}
-                  onDelete={onDelete}
-                  handleAction={handleAction}
-                />
-              )}
             </div>
           </div>
         </div>
