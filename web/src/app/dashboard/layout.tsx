@@ -14,22 +14,11 @@ export default function DashboardLayout({
   const isConversationPage = pathname?.match(/\/(chat|classroom)\/\d+$/);
 
   return (
-    <div className="flex bg-gray-50 overflow-hidden">
-      {/* Sidebar - Use conditional rendering instead of CSS hidden to avoid accessibility issues */}
-      {!isConversationPage && (
-        <div className="shrink-0">
-          <Sidebar />
-        </div>
-      )}
-      
-      {isConversationPage && (
-        <>
-          {/* Desktop sidebar for conversation pages */}
-          <div className="hidden md:block shrink-0">
-            <Sidebar />
-          </div>
-        </>
-      )}
+    <div className="flex h-[calc(100dvh)] bg-gray-50 max-sm:flex-col-reverse overflow-hidden">
+      {/* Sidebar - Always present for flex-col-reverse to work */}
+      <div className={`shrink-0 ${isConversationPage ? 'hidden md:block' : ''}`}>
+        <Sidebar />
+      </div>
       
       {/* Main content area */}
       <main className="flex-1 overflow-hidden">
