@@ -185,7 +185,7 @@ export default function DashboardPage() {
   if (!user) return null;
 
   return (
-    <div className="relative h-[calc(100dvh-4rem)] bg-gradient-to-br from-blue-50 via-white to-indigo-50 overflow-hidden flex flex-col">
+    <div className="relative h-[calc(100dvh-4rem)] sm:h-[calc(100dvh)] bg-gradient-to-br from-blue-50 via-white to-indigo-50 overflow-hidden flex flex-col">
         {/* Top Bar */}
         <header className="bg-white shadow-sm border-b border-gray-200 px-6 py-4 shrink-0">
           <div className="flex items-center justify-between">
