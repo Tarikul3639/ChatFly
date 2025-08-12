@@ -36,12 +36,12 @@ export default function ChatLayout({
   }, [params?.id]);
 
   return (
-    <div className="sm:h-screen bg-white flex">
+    <div className="bg-white h-screen flex">
       {/* Chat List Sidebar - Always visible on desktop, conditional on mobile */}
       <div
         className={`${
           selectedChatId ? "hidden md:block sm:w-80" : "block w-full sm:w-80"
-        } border-r border-gray-200 h-screen`}
+        } border-r border-gray-200`}
       >
         <ChatList
           onChatSelect={handleChatSelect}

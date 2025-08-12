@@ -279,7 +279,7 @@ export default function DashboardPage() {
               </h3>
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {classrooms.map((classroom) => (
-                  <Link key={classroom.id} href={`/classroom/${classroom.id}`}>
+                  <Link key={classroom.id} href={`/dashboard/classroom/${classroom.id}`}>
                     <Card className="shadow-lg border-0 hover:shadow-xl transition-shadow cursor-pointer group">
                       <CardHeader>
                         <div className="flex items-start justify-between">

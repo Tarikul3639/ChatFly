@@ -303,7 +303,7 @@ export default function ChatConversationPage() {
 
   // Main render
   return (
-    <div className="flex flex-col h-screen w-full z-50">
+    <div className="flex flex-col w-full z-50">
       {/* Chat Header */}
       <ChatHeader selectedChat={selectedChat} onBack={handleBackToList} />
 
