@@ -36,7 +36,7 @@ export default function ChatLayout({
   }, [params?.id]);
 
   return (
-    <div className="flex bg-red-500">
+    <div className="flex overflow-hidden">
       {/* Chat List Sidebar - Always visible on desktop, conditional on mobile */}
       <div
         className={`${

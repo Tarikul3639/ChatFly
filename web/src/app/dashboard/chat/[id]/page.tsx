@@ -308,7 +308,7 @@ export default function ChatConversationPage() {
       <ChatHeader selectedChat={selectedChat} onBack={handleBackToList} />
 
       {/* Messages */}
-      <div className="relative flex-1 overflow-auto">
+      <div className="flex-1 overflow-auto">
         <Message
           messages={messages}
           messagesEndRef={messagesEndRef}
@@ -322,7 +322,7 @@ export default function ChatConversationPage() {
 
         {/* New messages notification */}
         {!isAtBottom && newMessageCount > 0 && (
-          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-10">
+          <div className="fixed top-26 left-1/2 transform -translate-x-1/2 z-10">
             <button
               onClick={handleScrollToNewMessages}
               className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-full shadow-lg transition-all duration-200 flex items-center space-x-2 animate-bounce"
@@ -349,7 +349,7 @@ export default function ChatConversationPage() {
       </div>
 
       {/* Message Input */}
-      <div className="border-t border-gray-200 overflow-hidden">
+      <div className="border-t border-gray-200">
         {/* Edit Preview */}
         {editingMessage && (
           <EditPreview editingMessage={editingMessage} onCancel={cancelEdit} />
