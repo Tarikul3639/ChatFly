@@ -8,6 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import EmojiPicker from "emoji-picker-react";
 
 interface Message {
   id: number;
@@ -20,6 +21,12 @@ interface Message {
   isPinned?: boolean;
   attachments?: File[];
   role?: string;
+  reactions?: Array<{
+    emoji: string;
+    count: number;
+    users: string[];
+    reacted: boolean;
+  }>;
 }
 
 interface ActionButtonProps {
@@ -28,6 +35,7 @@ interface ActionButtonProps {
   onPin?: (message: Message) => void;
   onEdit?: (message: Message) => void;
   onDelete?: (messageId: number) => void;
+  onReaction?: (id: number, emoji: string) => void;
   forceOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
 }
@@ -35,9 +43,10 @@ interface ActionButtonProps {
 export default function ActionButton({
   message,
   onReply,
-  onPin,    
+  onPin,
   onEdit,
   onDelete,
+  onReaction,
   forceOpen = false,
   onOpenChange,
 }: ActionButtonProps) {
@@ -52,9 +61,10 @@ export default function ActionButton({
   // Effect to handle forceOpen prop
   React.useEffect(() => {
     if (forceOpen) {
-      setIsOpen(true);
+      setIsOpen(true);  
     }
   }, [forceOpen]);
+
   return (
     <div
       className={`absolute top-1/2 transform -translate-y-1/2 ${
@@ -67,11 +77,19 @@ export default function ActionButton({
             <EllipsisVertical className="w-4 h-4" />
           </button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent 
-          align={message.isOwn ? "end" : "start"} 
+        <DropdownMenuContent
+          align={message.isOwn ? "end" : "start"}
           side="bottom"
-          className="w-36 rounded-lg"
+          className="rounded-lg"
         >
+          <DropdownMenuItem className="p-0 rounded-full">
+            <EmojiPicker
+              lazyLoadEmojis={true}
+              reactionsDefaultOpen={true}
+              allowExpandReactions={false}
+              onEmojiClick={(e) => onReaction?.(message.id, e.emoji)}
+            />
+          </DropdownMenuItem>
           <DropdownMenuItem onClick={() => onReply?.(message)}>
             <Reply className="mr-2 h-4 w-4" />
             Reply
@@ -86,7 +104,7 @@ export default function ActionButton({
                 <Edit className="mr-2 h-4 w-4" />
                 Edit
               </DropdownMenuItem>
-              <DropdownMenuItem 
+              <DropdownMenuItem
                 onClick={() => onDelete?.(message.id)}
                 className="text-red-600 focus:text-red-600 focus:bg-red-50"
               >

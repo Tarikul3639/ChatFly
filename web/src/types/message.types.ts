@@ -10,6 +10,12 @@ export interface Message {
   attachments?: File[];
   role?: string;
   isEdited?: boolean;
+  reactions?: Array<{
+    emoji: string;
+    count: number;
+    users: string[];
+    reacted: boolean;
+  }>;
 }
 
 export interface MessageProps {
@@ -19,6 +25,7 @@ export interface MessageProps {
   onPin?: (message: Message) => void;
   onEdit?: (message: Message) => void;
   onDelete?: (messageId: number) => void;
+  onReaction?: (id: number, emoji: string) => void;
 }
 
 export interface AttachmentDisplayProps {

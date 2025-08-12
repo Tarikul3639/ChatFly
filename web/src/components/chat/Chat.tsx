@@ -45,6 +45,12 @@ export default function Chat() {
     deleteMessage(messageId);
   };
 
+  const handleReaction = (id: number, emoji: string) => {
+    // Handle reaction functionality
+    console.log('Reaction to message:', id, 'with emoji:', emoji);
+    // TODO: Implement reaction logic - add/remove reactions to/from the message
+  };
+
   const handleSend = async () => {
     if (message.trim() || attachments.length > 0) {
       await sendMessage(message, attachments);
@@ -103,6 +109,7 @@ export default function Chat() {
           onPin={handlePin}
           onEdit={handleEdit}
           onDelete={handleDelete}
+          onReaction={handleReaction}
         />
       )}
       

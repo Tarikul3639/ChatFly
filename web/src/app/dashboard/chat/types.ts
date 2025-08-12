@@ -26,6 +26,12 @@ export interface MessageType {
   attachments?: File[];
   role?: string;
   isPinned?: boolean;
+  reactions?: Array<{
+    emoji: string;
+    count: number;
+    users: string[];
+    reacted: boolean;
+  }>;
 }
 
 export interface User {
@@ -181,6 +187,20 @@ export const sampleMessages: MessageType[] = [
     isOwn: false,
     role: "teacher",
     isPinned: true,
+    reactions: [
+      {
+        emoji: "🔥",
+        count: 8,
+        users: ["Alice Johnson", "Mike Chen", "You", "Sarah Wilson", "John Doe", "Emma Davis", "Tom Brown", "Lisa Garcia"],
+        reacted: true
+      },
+      {
+        emoji: "📚",
+        count: 4,
+        users: ["Teaching Assistant", "Prof. Wilson", "Emma Davis", "You"],
+        reacted: true
+      }
+    ],
   },
   {
     id: 2,
@@ -246,6 +266,20 @@ export const sampleMessages: MessageType[] = [
     isOwn: false,
     role: "assistant",
     isPinned: true,
+    reactions: [
+      {
+        emoji: "🙏",
+        count: 6,
+        users: ["You", "Alice Johnson", "Mike Chen", "Sarah Wilson", "John Doe", "Emma Davis"],
+        reacted: true
+      },
+      {
+        emoji: "📖",
+        count: 2,
+        users: ["Prof. Wilson", "Dr. Smith"],
+        reacted: false
+      }
+    ],
   },
   {
     id: 7,
@@ -270,6 +304,20 @@ export const sampleMessages: MessageType[] = [
     id: 8,
     sender: "Dr. Smith",
     content: "Perfect! I'm glad everyone is engaged. Any other questions?",
+    reactions: [
+      {
+        emoji: "👍",
+        count: 5,
+        users: ["Alice Johnson", "Mike Chen", "You", "Sarah Wilson", "John Doe"],
+        reacted: true
+      },
+      {
+        emoji: "😊",
+        count: 3,
+        users: ["Teaching Assistant", "Prof. Wilson", "Emma Davis"],
+        reacted: false
+      }
+    ],
     timestamp: "10:48 AM",
     avatar: "DS",
     isOwn: false,

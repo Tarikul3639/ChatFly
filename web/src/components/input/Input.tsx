@@ -3,7 +3,7 @@
 import { useRef, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Mic, Send, Smile, Sparkles, Check } from "lucide-react";
+import { Send, Smile, Sparkles, Check } from "lucide-react";
 import AttachmentPreview from "./AttachmentPreview";
 import EmojiPickerComponent from "./EmojiPickerComponent";
 import AISuggestionsComponent from "./AISuggestionsComponent";
@@ -202,6 +202,13 @@ export default function MessageInput({
                 className="flex-1 bg-transparent border-0 resize-none min-h-[28px] max-h-[120px] text-sm md:text-base placeholder:text-gray-500 focus-visible:ring-0 focus-visible:ring-offset-0 p-0 leading-6 hide-scrollbar shadow-none break-words overflow-wrap break-all"
                 rows={1}
                 disabled={isRecording}
+                aria-label={
+                  isRecording
+                    ? "Recording audio message"
+                    : isEditing
+                    ? "Edit message"
+                    : "Type a message"
+                }
               />
 
               {/* Right side action buttons */}

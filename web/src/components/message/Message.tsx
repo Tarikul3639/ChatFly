@@ -5,19 +5,22 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Reply, CheckCheck, Pin } from "lucide-react";
 import React, { useState, useRef } from "react";
-import { MessageProps } from "@/types/message.types";
+import { MessageProps } from "./Message.types";
 import AttachmentDisplay from "./AttachmentDisplay";
 import ActionButton from "./ActionButton";
 import ReplyPreview from "./ReplyPreview";
+import ReactionDisplay from "./ReactionDisplay";
 import { motion, useAnimation } from "framer-motion";
 
 export default function Message({
   messages,
   messagesEndRef,
+  messagesContainerRef,
   onReply,
   onPin,
   onEdit,
   onDelete,
+  onReaction,
 }: MessageProps) {
   const [highlightedMessageId, setHighlightedMessageId] = useState<
     number | null
@@ -54,6 +57,7 @@ export default function Message({
 
   return (
     <div
+      ref={messagesContainerRef}
       className="flex-1 overflow-auto p-3 md:p-4 space-y-2 bg-gray-50"
       suppressHydrationWarning
     >
@@ -63,7 +67,7 @@ export default function Message({
           ref={(el) => {
             if (el) messageRefs.current[message.id] = el;
           }}
-          className={`flex overflow-hidden ${
+          className={`flex max-w-screen ${
             message.isOwn ? "justify-end" : "justify-start"
           } transition-all duration-500 ${
             highlightedMessageId === message.id
@@ -82,9 +86,9 @@ export default function Message({
               // Start hold timer
               holdTimeout.current = setTimeout(() => {
                 if (!dragStarted.current) {
-                  setHoldMessage(message.id); // Only if not dragged
+                  setHoldMessage(message.id);
                 }
-              }, 100); // 100ms hold like Messenger
+              }, 300); // 300ms hold like Messenger
             }}
             onDragStart={() => {
               setIsDragging(message.id);
@@ -216,6 +220,16 @@ export default function Message({
                     : ""
                 }`}
               >
+               {/* Reactions */}
+                {message.reactions && message.reactions.length > 0 && (
+                  <ReactionDisplay
+                    reactions={message.reactions}
+                    isOwn={message.isOwn}
+                    onReaction={onReaction}
+                    messageId={message.id}
+                  />
+                )}
+
                 {/* Pin indicator */}
                 {message.isPinned && (
                   <div
@@ -260,6 +274,7 @@ export default function Message({
                 onPin={onPin}
                 onEdit={onEdit}
                 onDelete={onDelete}
+                onReaction={onReaction}
                 forceOpen={holdMessage === message.id}
                 onOpenChange={(open: boolean) => {
                   if (!open) setHoldMessage(null);
