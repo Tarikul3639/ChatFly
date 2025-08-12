@@ -303,7 +303,7 @@ export default function ChatConversationPage() {
 
   // Main render
   return (
-    <div className="flex h-full flex-col w-full z-50">
+    <div className="flex h-screen flex-col w-full z-50 bg-white">
       {/* Chat Header */}
       <ChatHeader selectedChat={selectedChat} onBack={handleBackToList} />
 
@@ -349,7 +349,7 @@ export default function ChatConversationPage() {
       </div>
 
       {/* Message Input */}
-      <div className="flex-none bg-white border-t border-gray-200 safe-area-bottom">
+      <div className="border-t border-gray-200 overflow-hidden">
         {/* Edit Preview */}
         {editingMessage && (
           <EditPreview editingMessage={editingMessage} onCancel={cancelEdit} />
