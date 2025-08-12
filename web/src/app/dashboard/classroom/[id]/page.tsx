@@ -238,7 +238,7 @@ export default function ClassroomPage() {
   if (!user) return null;
 
   return (
-    <div className="h-screen w-full bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex">
+    <div className="h-[calc(100vh)] w-full bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex">
       {/* Main Chat Area */}
       <div className="relative flex flex-col w-full">
         {/* Header */}

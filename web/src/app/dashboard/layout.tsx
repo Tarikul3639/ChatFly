@@ -14,7 +14,7 @@ export default function DashboardLayout({
   const isConversationPage = pathname?.match(/\/(chat|classroom)\/\d+$/);
 
   return (
-    <div className="flex h-[cal(100dvh)] bg-gray-50 overflow-hidden">
+    <div className="flex bg-gray-50 overflow-hidden">
       {/* Sidebar - Use conditional rendering instead of CSS hidden to avoid accessibility issues */}
       {!isConversationPage && (
         <div className="shrink-0">

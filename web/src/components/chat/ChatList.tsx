@@ -50,7 +50,7 @@ export default function ChatList({ onChatSelect, selectedChatId }: ChatListProps
   }
 
   return (
-    <div className="w-full md:w-80 bg-gray-50 border-r border-gray-200 flex flex-col h-full pb-16 sm:pb-0">
+    <div className="w-full md:w-80 bg-gray-50 border-r border-gray-200 flex flex-col h-[calc(100vh)]">
       {/* Header */}
       <div className="p-4 bg-white border-b border-gray-200">
         <div className="flex items-center justify-between mb-4">
