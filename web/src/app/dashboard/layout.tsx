@@ -14,7 +14,7 @@ export default function DashboardLayout({
   const isConversationPage = pathname?.match(/\/(chat|classroom)\/\d+$/);
 
   return (
-    <div className="flex h-[calc(100dvh)] bg-gray-50 max-sm:flex-col-reverse overflow-hidden">
+    <div className="flex h-screen bg-gray-50 max-sm:flex-col-reverse overflow-hidden">
       {/* Sidebar - Always present for flex-col-reverse to work */}
       <div className={`shrink-0 ${isConversationPage ? 'hidden md:block' : ''}`}>
         <Sidebar />
