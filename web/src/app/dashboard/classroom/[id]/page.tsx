@@ -238,14 +238,14 @@ export default function ClassroomPage() {
   if (!user) return null;
 
   return (
-    <div className="h-[calc(100dvh)] w-full bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex">
+    <div className="h-[calc(100vh)] w-full bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex">
       {/* Main Chat Area */}
       <div className="relative flex flex-col w-full">
         {/* Header */}
         <header className="bg-white shadow-sm border-b border-gray-200 sm:px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <Link href="/dashboard/classroom">
+              <Link href="/classroom">
                 <Button variant="ghost" size="default">
                   <ArrowLeft className="w-4 h-4" />
                 </Button>

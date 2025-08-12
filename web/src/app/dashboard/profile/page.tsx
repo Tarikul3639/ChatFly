@@ -61,7 +61,7 @@ export default function ProfilePage() {
   if (!user) return null
 
   return (
-    <div className="h-[calc(100dvh-4rem)] sm:h-[calc(100dvh)] overflow-y-auto bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+    <div className="h-screen pb-16 sm:pb-0 overflow-y-auto bg-gradient-to-br from-blue-50 via-white to-indigo-50">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
