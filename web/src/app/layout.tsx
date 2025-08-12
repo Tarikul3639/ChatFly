@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import React from "react";
 import { Geist, Geist_Mono } from "next/font/google";
-import AppProtection from "@/components/AppProtection";
+// import AppProtection from "@/components/AppProtection";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -93,7 +93,8 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning
       >
-        <AppProtection /> {/* protection system here */}
+        {/* protection system here */}
+        {/* <AppProtection /> */}
         {children}
       </body>
     </html>
