@@ -16,7 +16,6 @@ interface VoiceInputComponentProps {
 export default function ModernVoiceInputComponent({
   isRecording,
   setIsRecording,
-  voice,
   setVoice,
   disabled = false,
 }: VoiceInputComponentProps) {
@@ -87,7 +86,7 @@ export default function ModernVoiceInputComponent({
       console.error("Microphone access error:", error);
       
       // Better error messages for different scenarios
-      const err = error as any;
+      const err = error as DOMException;
       if (err.name === 'NotAllowedError') {
         alert("Microphone permission denied. Please allow microphone access and try again.");
       } else if (err.name === 'NotFoundError') {
@@ -231,3 +230,4 @@ export default function ModernVoiceInputComponent({
     </div>
   );
 }
+ 
