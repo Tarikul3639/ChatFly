@@ -51,8 +51,37 @@ export default function ModernVoiceInputComponent({
       const audio = new Audio(URL.createObjectURL(voice));
       audioRef.current = audio;
 
+      // Estimate duration based on file size as fallback for infinity duration
+      const estimatedDuration = voice.size / (1024 * 16);
+
+      let durationSet = false;
+
+      // Try multiple events to get valid duration
       audio.addEventListener('loadedmetadata', () => {
-        setAudioDuration(audio.duration);
+        const duration = audio.duration;
+        if (isFinite(duration) && !isNaN(duration) && duration > 0) {
+          setAudioDuration(duration);
+          durationSet = true;
+        }
+      });
+
+      audio.addEventListener('canplaythrough', () => {
+        const duration = audio.duration;
+        if (isFinite(duration) && !isNaN(duration) && duration > 0) {
+          setAudioDuration(duration);
+          durationSet = true;
+        } else if (!durationSet && estimatedDuration > 0) {
+          setAudioDuration(estimatedDuration);
+          durationSet = true;
+        }
+      });
+
+      audio.addEventListener('durationchange', () => {
+        const duration = audio.duration;
+        if (isFinite(duration) && !isNaN(duration) && duration > 0) {
+          setAudioDuration(duration);
+          durationSet = true;
+        }
       });
 
       audio.addEventListener('timeupdate', () => {
@@ -63,6 +92,13 @@ export default function ModernVoiceInputComponent({
         setIsPlaying(false);
         setPlaybackTime(0);
         audio.currentTime = 0;
+      });
+
+      audio.addEventListener('error', (e) => {
+        console.error('Audio playback error:', e);
+        setAudioDuration(0);
+        setIsPlaying(false);
+        setPlaybackTime(0);
       });
     }
   }, [voice]);
@@ -96,7 +132,7 @@ export default function ModernVoiceInputComponent({
     }
   }, [isOpen, Preview]);
 
-  // 🎙 Start Recording
+  // 🎙️ Start Recording
   const handleMicClick = async () => {
     try {
       // Check if getUserMedia is supported
@@ -105,13 +141,12 @@ export default function ModernVoiceInputComponent({
         return;
       }
 
-      // Request microphone permission with mobile-friendly constraints
+      // Request microphone permission with optimized constraints
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: true,
           noiseSuppression: true,
           autoGainControl: true,
-          // Mobile-friendly settings
           sampleRate: 44100,
           channelCount: 1,
         },
@@ -141,10 +176,9 @@ export default function ModernVoiceInputComponent({
       mediaRecorder.onstop = () => {
         const mimeType = mediaRecorder.mimeType || "audio/webm";
         const blob = new Blob(chunksRef.current, { type: mimeType });
-        setVoice(blob); // ✅ Save merged Blob
+        setVoice(blob);
         chunksRef.current = [];
         stream.getTracks().forEach((track) => track.stop());
-        // Stop recording state
         setIsRecording(false);
         setIsPaused(false);
         setTime(0);
@@ -201,18 +235,18 @@ export default function ModernVoiceInputComponent({
     }
   };
 
-  // ⏸ Pause Recording
+  // ⏸️ Pause Recording
   const handlePause = () => {
     if (mediaRecorderRef.current?.state === "recording") {
-      mediaRecorderRef.current.pause(); // ✅ Stop taking input temporarily
+      mediaRecorderRef.current.pause();
       setIsPaused(true);
     }
   };
 
-  // ▶ Resume Recording
+  // ▶️ Resume Recording
   const handleResume = () => {
     if (mediaRecorderRef.current?.state === "paused") {
-      mediaRecorderRef.current.resume(); // ✅ Continue adding to same Blob
+      mediaRecorderRef.current.resume();
       setIsPaused(false);
     }
   };
@@ -220,7 +254,7 @@ export default function ModernVoiceInputComponent({
   // ✅ Stop and Save Recording
   const handleDone = () => {
     if (mediaRecorderRef.current) {
-      mediaRecorderRef.current.stop(); // This will trigger onstop and save the blob
+      mediaRecorderRef.current.stop();
       setPreview(true);
     }
   };
@@ -377,7 +411,7 @@ export default function ModernVoiceInputComponent({
                     <div
                       className="bg-blue-500 h-2 rounded-full transition-all duration-100"
                       style={{
-                        width: `${(playbackTime / audioDuration) * 100}%`,
+                        width: `${audioDuration > 0 && isFinite(audioDuration) ? Math.min(100, (playbackTime / audioDuration) * 100) : 0}%`,
                       }}
                     />
                   </div>
