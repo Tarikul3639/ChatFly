@@ -133,6 +133,7 @@ export default function ChatConversationPage() {
     }
 
     setMessage("");
+    setIsRecording(false);
     setAttachments([]);
     setVoice(null);
     setReplyingTo(null);
@@ -385,7 +386,7 @@ export default function ChatConversationPage() {
           textareaRef={textareaRef}
           attachments={attachments}
           setAttachments={setAttachments}
-          isEditing={!editingMessage}
+          isEditing={!!editingMessage}
         />
       </div>
     </div>

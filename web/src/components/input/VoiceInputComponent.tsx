@@ -1,30 +1,100 @@
 "use client";
 
 import type React from "react";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Mic, X, Play, Pause, Check } from "lucide-react";
 
 interface VoiceInputComponentProps {
-  isRecording: boolean;
-  setIsRecording: (v: boolean) => void;
+  isOpen: boolean;
+  setIsOpen: (v: boolean) => void;
   voice: Blob | null;
   setVoice: (v: Blob | null) => void;
   disabled?: boolean;
 }
 
 export default function ModernVoiceInputComponent({
-  isRecording,
-  setIsRecording,
+  isOpen,
+  setIsOpen,
   setVoice,
+  voice,
   disabled = false,
 }: VoiceInputComponentProps) {
   const [time, setTime] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const [Preview, setPreview] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [playbackTime, setPlaybackTime] = useState(0);
+  const [audioDuration, setAudioDuration] = useState(0);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<BlobPart[]>([]);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Audio playback handlers
+  const handlePlayVoice = () => {
+    if (voice && audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.pause();
+        setIsPlaying(false);
+      } else {
+        audioRef.current.play();
+        setIsPlaying(true);
+      }
+    }
+  };
+
+  const setupAudioPlayback = useCallback(() => {
+    if (voice && !audioRef.current) {
+      const audio = new Audio(URL.createObjectURL(voice));
+      audioRef.current = audio;
+
+      audio.addEventListener('loadedmetadata', () => {
+        setAudioDuration(audio.duration);
+      });
+
+      audio.addEventListener('timeupdate', () => {
+        setPlaybackTime(audio.currentTime);
+      });
+
+      audio.addEventListener('ended', () => {
+        setIsPlaying(false);
+        setPlaybackTime(0);
+        audio.currentTime = 0;
+      });
+    }
+  }, [voice]);
+
+  // Setup audio when voice is available
+  useEffect(() => {
+    if (voice) {
+      setupAudioPlayback();
+    } else {
+      // Reset preview when voice is cleared (after sending)
+      setPreview(false);
+      setIsPlaying(false);
+      setPlaybackTime(0);
+      setAudioDuration(0);
+    }
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        URL.revokeObjectURL(audioRef.current.src);
+        audioRef.current = null;
+      }
+    };
+  }, [voice, setupAudioPlayback]);
+
+  // Reset preview when modal is closed (after sending message)
+  useEffect(() => {
+    if (!isOpen && Preview) {
+      setPreview(false);
+      setIsPlaying(false);
+      setPlaybackTime(0);
+    }
+  }, [isOpen, Preview]);
 
   // 🎙 Start Recording
   const handleMicClick = async () => {
@@ -36,26 +106,28 @@ export default function ModernVoiceInputComponent({
       }
 
       // Request microphone permission with mobile-friendly constraints
-      const stream = await navigator.mediaDevices.getUserMedia({ 
+      const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: true,
           noiseSuppression: true,
           autoGainControl: true,
           // Mobile-friendly settings
           sampleRate: 44100,
-          channelCount: 1
-        } 
+          channelCount: 1,
+        },
       });
-      
+
       // Check if MediaRecorder is supported
       if (!window.MediaRecorder) {
         alert("Audio recording is not supported in this browser");
-        stream.getTracks().forEach(track => track.stop());
+        stream.getTracks().forEach((track) => track.stop());
         return;
       }
 
       const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/mp4'
+        mimeType: MediaRecorder.isTypeSupported("audio/webm")
+          ? "audio/webm"
+          : "audio/mp4",
       });
       mediaRecorderRef.current = mediaRecorder;
       chunksRef.current = [];
@@ -67,7 +139,7 @@ export default function ModernVoiceInputComponent({
       };
 
       mediaRecorder.onstop = () => {
-        const mimeType = mediaRecorder.mimeType || 'audio/webm';
+        const mimeType = mediaRecorder.mimeType || "audio/webm";
         const blob = new Blob(chunksRef.current, { type: mimeType });
         setVoice(blob); // ✅ Save merged Blob
         chunksRef.current = [];
@@ -79,22 +151,29 @@ export default function ModernVoiceInputComponent({
       };
 
       mediaRecorder.start();
+      setIsOpen(true);
       setIsRecording(true);
       setIsPaused(false);
       setTime(0);
     } catch (error) {
       console.error("Microphone access error:", error);
-      
+
       // Better error messages for different scenarios
       const err = error as DOMException;
-      if (err.name === 'NotAllowedError') {
-        alert("Microphone permission denied. Please allow microphone access and try again.");
-      } else if (err.name === 'NotFoundError') {
-        alert("No microphone found. Please connect a microphone and try again.");
-      } else if (err.name === 'NotSupportedError') {
+      if (err.name === "NotAllowedError") {
+        alert(
+          "Microphone permission denied. Please allow microphone access and try again."
+        );
+      } else if (err.name === "NotFoundError") {
+        alert(
+          "No microphone found. Please connect a microphone and try again."
+        );
+      } else if (err.name === "NotSupportedError") {
         alert("Audio recording is not supported in this browser.");
       } else {
-        alert("Failed to access microphone. Please check your settings and try again.");
+        alert(
+          "Failed to access microphone. Please check your settings and try again."
+        );
       }
     }
   };
@@ -105,9 +184,21 @@ export default function ModernVoiceInputComponent({
       mediaRecorderRef.current.stop();
     }
     setIsRecording(false);
+    setIsOpen(false);
     setIsPaused(false);
     setTime(0);
     setVoice(null);
+    setPreview(false);
+    setIsPlaying(false);
+    setPlaybackTime(0);
+    setAudioDuration(0);
+    
+    // Clean up audio
+    if (audioRef.current) {
+      audioRef.current.pause();
+      URL.revokeObjectURL(audioRef.current.src);
+      audioRef.current = null;
+    }
   };
 
   // ⏸ Pause Recording
@@ -130,6 +221,7 @@ export default function ModernVoiceInputComponent({
   const handleDone = () => {
     if (mediaRecorderRef.current) {
       mediaRecorderRef.current.stop(); // This will trigger onstop and save the blob
+      setPreview(true);
     }
   };
 
@@ -151,6 +243,7 @@ export default function ModernVoiceInputComponent({
 
   return (
     <div className="w-full max-w-md mx-auto">
+
       {isRecording ? (
         <div
           ref={containerRef}
@@ -212,6 +305,90 @@ export default function ModernVoiceInputComponent({
             <Check className="w-4 h-4" />
           </Button>
         </div>
+      ) : Preview ?(
+        <div className="max-w-4xl mx-auto p-2 md:p-4">
+          <div className="flex flex-col space-y-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            {/* Header with icon and info */}
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                <svg
+                  className="w-4 h-4 text-white"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.617.784L4.76 13.85A1 1 0 014 13v-2a1 1 0 01.76-.851l3.623-2.934a1 1 0 01.617-.784zM12 8v4a1 1 0 01-2 0V8a1 1 0 012 0zm3 2a1 1 0 00-1 1v.5a1 1 0 002 0V11a1 1 0 00-1-1z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-blue-700">
+                  Voice message ready
+                </p>
+                <p className="text-xs text-blue-600">
+                  Size: {voice ? (voice.size / 1024).toFixed(1) : '0'} KB
+                  {audioDuration > 0 && ` • ${audioDuration.toFixed(1)}s`}
+                </p>
+              </div>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => {
+                  setVoice(null);
+                  setPreview(false);
+                  setIsPlaying(false);
+                  setPlaybackTime(0);
+                  setAudioDuration(0);
+                  setIsOpen(false);
+                }}
+                className="text-blue-600 hover:text-blue-800"
+              >
+                Remove
+              </Button>
+            </div>
+
+            {/* Audio Controls */}
+            <div className="flex items-center space-x-3">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handlePlayVoice}
+                className="flex items-center space-x-2 text-blue-600 border-blue-200 hover:bg-blue-100"
+              >
+                {isPlaying ? (
+                  <Pause className="w-4 h-4" />
+                ) : (
+                  <Play className="w-4 h-4" />
+                )}
+                <span className="text-sm">
+                  {isPlaying ? "Pause" : "Play"}
+                </span>
+              </Button>
+
+              {/* Progress Bar */}
+              {audioDuration > 0 && (
+                <div className="flex-1 flex items-center space-x-2">
+                  <span className="text-xs text-blue-600">
+                    {Math.floor(playbackTime)}s
+                  </span>
+                  <div className="flex-1 bg-blue-200 rounded-full h-2">
+                    <div
+                      className="bg-blue-500 h-2 rounded-full transition-all duration-100"
+                      style={{
+                        width: `${(playbackTime / audioDuration) * 100}%`,
+                      }}
+                    />
+                  </div>
+                  <span className="text-xs text-blue-600">
+                    {Math.floor(audioDuration)}s
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       ) : (
         <Button
           size="icon"
@@ -230,4 +407,3 @@ export default function ModernVoiceInputComponent({
     </div>
   );
 }
- 

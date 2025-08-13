@@ -147,31 +147,6 @@ export default function MessageInput({
           setAttachments={setAttachments}
         />
 
-        {/* Voice Preview */}
-        {voice && !isRecording && (
-          <div className="max-w-4xl mx-auto p-2 md:p-4">
-            <div className="flex items-center space-x-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-              <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.617.784L4.76 13.85A1 1 0 014 13v-2a1 1 0 01.76-.851l3.623-2.934a1 1 0 01.617-.784zM12 8v4a1 1 0 01-2 0V8a1 1 0 012 0zm3 2a1 1 0 00-1 1v.5a1 1 0 002 0V11a1 1 0 00-1-1z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <div className="flex-1">
-                <p className="text-sm font-medium text-blue-700">Voice message ready</p>
-                <p className="text-xs text-blue-600">Size: {(voice.size / 1024).toFixed(1)} KB</p>
-              </div>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => setVoice(null)}
-                className="text-blue-600 hover:text-blue-800"
-              >
-                Remove
-              </Button>
-            </div>
-          </div>
-        )}
-
         {/* Hidden file input */}
         <input
           ref={fileInputRef}
@@ -276,8 +251,8 @@ export default function MessageInput({
 
                 {/* Voice Record Button (shows when no text and not recording) */}
                 <VoiceInputComponent
-                  isRecording={isRecording}
-                  setIsRecording={(recording) => {
+                  isOpen={isRecording}
+                  setIsOpen={(recording) => {
                     setIsRecording(recording);
                     setActiveInputType(recording ? "voice" : "none");
                     if (recording) {
