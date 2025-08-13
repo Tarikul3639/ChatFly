@@ -21,6 +21,7 @@ export default function Chat() {
   const [message, setMessage] = useState('');
   const [showAISuggestions, setShowAISuggestions] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
+  const [voice, setVoice] = useState<Blob | null>(null);
   const [attachments, setAttachments] = useState<File[]>([]);
 
   useEffect(() => {
@@ -52,10 +53,21 @@ export default function Chat() {
   };
 
   const handleSend = async () => {
-    if (message.trim() || attachments.length > 0) {
-      await sendMessage(message, attachments);
+    console.log('Sending message:', voice);
+    if (message.trim() || attachments.length > 0 || voice) {
+      // Convert voice blob to file if it exists
+      const allAttachments = [...attachments];
+      if (voice) {
+        const voiceFile = new File([voice], `voice-${Date.now()}.webm`, {
+          type: voice.type || 'audio/webm'
+        });
+        allAttachments.push(voiceFile);
+      }
+      
+      await sendMessage(message, allAttachments);
       setMessage('');
       setAttachments([]);
+      setVoice(null);
     }
   };
 
@@ -117,6 +129,8 @@ export default function Chat() {
         message={message}
         setMessage={setMessage}
         onSend={handleSend}
+        voice={voice}
+        setVoice={setVoice}
         showAISuggestions={showAISuggestions}
         setShowAISuggestions={setShowAISuggestions}
         isRecording={isRecording}

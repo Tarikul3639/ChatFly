@@ -14,6 +14,8 @@ interface MessageInputProps {
   message: string;
   setMessage: (v: string) => void;
   onSend: () => void;
+  voice: Blob | null;
+  setVoice: (v: Blob | null) => void;
   showAISuggestions: boolean;
   setShowAISuggestions: (v: boolean) => void;
   isRecording: boolean;
@@ -29,6 +31,8 @@ export default function MessageInput({
   message,
   setMessage,
   onSend,
+  voice,
+  setVoice,
   showAISuggestions,
   setShowAISuggestions,
   isRecording,
@@ -46,15 +50,6 @@ export default function MessageInput({
     "none" | "image" | "video" | "file" | "voice"
   >("none");
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
-  const handleVoiceComplete = (transcription: string) => {
-    setMessage(transcription);
-    setActiveInputType("none");
-    // Focus back to textarea after voice input
-    if (textareaRef.current) {
-      textareaRef.current.focus();
-    }
-  };
 
   const handleFileSelect = (acceptType: string) => {
     let inputType: "image" | "video" | "file" = "file";
@@ -152,6 +147,31 @@ export default function MessageInput({
           setAttachments={setAttachments}
         />
 
+        {/* Voice Preview */}
+        {voice && !isRecording && (
+          <div className="max-w-4xl mx-auto p-2 md:p-4">
+            <div className="flex items-center space-x-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.617.784L4.76 13.85A1 1 0 014 13v-2a1 1 0 01.76-.851l3.623-2.934a1 1 0 01.617-.784zM12 8v4a1 1 0 01-2 0V8a1 1 0 012 0zm3 2a1 1 0 00-1 1v.5a1 1 0 002 0V11a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-blue-700">Voice message ready</p>
+                <p className="text-xs text-blue-600">Size: {(voice.size / 1024).toFixed(1)} KB</p>
+              </div>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setVoice(null)}
+                className="text-blue-600 hover:text-blue-800"
+              >
+                Remove
+              </Button>
+            </div>
+          </div>
+        )}
+
         {/* Hidden file input */}
         <input
           ref={fileInputRef}
@@ -187,32 +207,33 @@ export default function MessageInput({
           {/* Input Container */}
           <div className="flex-1 relative">
             <div className="flex items-end bg-gray-100 hover:bg-gray-200 transition-colors rounded-2xl px-4 py-2 min-h-[44px]">
-              <Textarea
-                ref={textareaRef}
-                autoFocus
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                placeholder={
-                  isRecording
-                    ? "Recording..."
-                    : isEditing
-                    ? "Edit your message..."
-                    : "Type a message..."
-                }
-                className="flex-1 bg-transparent border-0 resize-none min-h-[28px] max-h-[120px] text-sm md:text-base placeholder:text-gray-500 focus-visible:ring-0 focus-visible:ring-offset-0 p-0 leading-6 hide-scrollbar shadow-none break-words overflow-wrap break-all"
-                rows={1}
-                disabled={isRecording}
-                aria-label={
-                  isRecording
-                    ? "Recording audio message"
-                    : isEditing
-                    ? "Edit message"
-                    : "Type a message"
-                }
-              />
-
+              {!isRecording && (
+                <Textarea
+                  ref={textareaRef}
+                  autoFocus
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  placeholder={
+                    isRecording
+                      ? "Recording..."
+                      : isEditing
+                      ? "Edit your message..."
+                      : "Type a message..."
+                  }
+                  className="flex-1 bg-transparent border-0 resize-none min-h-[28px] max-h-[120px] text-sm md:text-base placeholder:text-gray-500 focus-visible:ring-0 focus-visible:ring-offset-0 p-0 leading-6 hide-scrollbar shadow-none break-words overflow-wrap break-all"
+                  rows={1}
+                  disabled={isRecording}
+                  aria-label={
+                    isRecording
+                      ? "Recording audio message"
+                      : isEditing
+                      ? "Edit message"
+                      : "Type a message"
+                  }
+                />
+              )}
               {/* Right side action buttons */}
-              <div className="flex items-center space-x-1 ml-2 flex-shrink-0">
+              <div className={`flex items-center ${isRecording && "w-full"} space-x-1 ml-2 flex-shrink-0`}>
                 {/* Emoji Button */}
                 {!isRecording && (
                   <Button
@@ -265,7 +286,8 @@ export default function MessageInput({
                       setShowAttachmentMenu(false);
                     }
                   }}
-                  onVoiceComplete={handleVoiceComplete}
+                  voice={voice}
+                  setVoice={setVoice}
                   disabled={
                     activeInputType !== "none" && activeInputType !== "voice"
                   }
@@ -278,13 +300,13 @@ export default function MessageInput({
           <Button
             size="icon"
             className={`rounded-full flex-shrink-0 h-11 w-11 transition-all duration-200 ${
-              message.trim() || attachments.length > 0
+              message.trim() || attachments.length > 0 || voice
                 ? isEditing
                   ? "bg-green-500 hover:bg-green-600 scale-100 shadow-lg"
                   : "bg-blue-500 hover:bg-blue-600 scale-100 shadow-lg"
                 : "bg-gray-300 cursor-not-allowed scale-95"
             }`}
-            disabled={!message.trim() && attachments.length === 0}
+            disabled={!message.trim() && attachments.length === 0 && !voice}
             onClick={onSend}
           >
             {isEditing ? (

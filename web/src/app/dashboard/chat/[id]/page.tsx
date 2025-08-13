@@ -24,6 +24,7 @@ export default function ChatConversationPage() {
   // State for message input
   const [message, setMessage] = useState("");
   const [attachments, setAttachments] = useState<File[]>([]);
+  const [voice, setVoice] = useState<Blob | null>(null);
   const [isRecording, setIsRecording] = useState(false);
 
   // State for message interactions
@@ -85,7 +86,7 @@ export default function ChatConversationPage() {
 
   // Message handling functions
   const handleSendMessage = () => {
-    if (!message.trim() && attachments.length === 0) return;
+    if (!message.trim() && attachments.length === 0 && !voice) return;
 
     const currentTime = new Date().toLocaleTimeString([], {
       hour: "2-digit",
@@ -106,6 +107,14 @@ export default function ChatConversationPage() {
       // Don't force scroll for edits, maintain position
     } else {
       // Create new message
+      const allAttachments = [...attachments];
+      if (voice) {
+        const voiceFile = new File([voice], `voice-${Date.now()}.webm`, {
+          type: voice.type || 'audio/webm'
+        });
+        allAttachments.push(voiceFile);
+      }
+
       const newMessage = {
         id: messages.length + 1,
         sender: "You",
@@ -114,7 +123,7 @@ export default function ChatConversationPage() {
         avatar: "YU",
         isOwn: true,
         replyTo: replyingTo || undefined,
-        attachments: attachments.length > 0 ? attachments : undefined,
+        attachments: allAttachments.length > 0 ? allAttachments : undefined,
         role: "student",
       };
       setMessages([...messages, newMessage]);
@@ -125,6 +134,7 @@ export default function ChatConversationPage() {
 
     setMessage("");
     setAttachments([]);
+    setVoice(null);
     setReplyingTo(null);
     textareaRef?.current?.focus();
   };
@@ -364,6 +374,8 @@ export default function ChatConversationPage() {
           message={message}
           setMessage={setMessage}
           onSend={handleSendMessage}
+          voice={voice}
+          setVoice={setVoice}
           showAISuggestions={showAISuggestions}
           setShowAISuggestions={setShowAISuggestions}
           isRecording={isRecording}
@@ -373,7 +385,7 @@ export default function ChatConversationPage() {
           textareaRef={textareaRef}
           attachments={attachments}
           setAttachments={setAttachments}
-          isEditing={!!editingMessage}
+          isEditing={!editingMessage}
         />
       </div>
     </div>
