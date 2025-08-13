@@ -298,9 +298,15 @@ export default function ModernVoiceInputComponent({
             {[...Array(5)].map((_, i) => (
               <div
                 key={i}
-                className="w-1 bg-blue-500 rounded-full animate-pulse"
+                className={`w-1 rounded-full transition-all ${
+                  !isPaused 
+                    ? 'bg-blue-500 animate-pulse' 
+                    : 'bg-blue-400'
+                }`}
                 style={{
-                  height: `${8 + Math.sin(Date.now() / 200 + i) * 4}px`,
+                  height: isPaused 
+                    ? '8px' 
+                    : `${8 + Math.sin(Date.now() / 200 + i) * 4}px`,
                   animationDelay: `${i * 100}ms`,
                   animationDuration: "1s",
                 }}
@@ -339,89 +345,62 @@ export default function ModernVoiceInputComponent({
             <Check className="w-4 h-4" />
           </Button>
         </div>
-      ) : Preview ?(
-        <div className="max-w-4xl mx-auto p-2 md:p-4">
-          <div className="flex flex-col space-y-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-            {/* Header with icon and info */}
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                <svg
-                  className="w-4 h-4 text-white"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.617.784L4.76 13.85A1 1 0 014 13v-2a1 1 0 01.76-.851l3.623-2.934a1 1 0 01.617-.784zM12 8v4a1 1 0 01-2 0V8a1 1 0 012 0zm3 2a1 1 0 00-1 1v.5a1 1 0 002 0V11a1 1 0 00-1-1z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </div>
-              <div className="flex-1">
-                <p className="text-sm font-medium text-blue-700">
-                  Voice message ready
-                </p>
-                <p className="text-xs text-blue-600">
-                  Size: {voice ? (voice.size / 1024).toFixed(1) : '0'} KB
-                  {audioDuration > 0 && ` • ${audioDuration.toFixed(1)}s`}
-                </p>
-              </div>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => {
-                  setVoice(null);
-                  setPreview(false);
-                  setIsPlaying(false);
-                  setPlaybackTime(0);
-                  setAudioDuration(0);
-                  setIsOpen(false);
-                }}
-                className="text-blue-600 hover:text-blue-800"
-              >
-                Remove
-              </Button>
-            </div>
-
-            {/* Audio Controls */}
-            <div className="flex items-center space-x-3">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={handlePlayVoice}
-                className="flex items-center space-x-2 text-blue-600 border-blue-200 hover:bg-blue-100"
-              >
-                {isPlaying ? (
-                  <Pause className="w-4 h-4" />
-                ) : (
-                  <Play className="w-4 h-4" />
-                )}
-                <span className="text-sm">
-                  {isPlaying ? "Pause" : "Play"}
-                </span>
-              </Button>
-
-              {/* Progress Bar */}
-              {audioDuration > 0 && (
-                <div className="flex-1 flex items-center space-x-2">
-                  <span className="text-xs text-blue-600">
-                    {Math.floor(playbackTime)}s
-                  </span>
-                  <div className="flex-1 bg-blue-200 rounded-full h-2">
-                    <div
-                      className="bg-blue-500 h-2 rounded-full transition-all duration-100"
-                      style={{
-                        width: `${audioDuration > 0 && isFinite(audioDuration) ? Math.min(100, (playbackTime / audioDuration) * 100) : 0}%`,
-                      }}
-                    />
-                  </div>
-                  <span className="text-xs text-blue-600">
-                    {Math.floor(audioDuration)}s
-                  </span>
-                </div>
-              )}
-            </div>
+      ) : Preview ? (
+        <div className="flex items-center bg-blue-50 border border-blue-200 rounded-full px-3 py-2 space-x-3 max-w-md">
+          {/* Voice Icon */}
+          <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+            <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.617.784L4.76 13.85A1 1 0 014 13v-2a1 1 0 01.76-.851l3.623-2.934a1 1 0 01.617-.784zM12 8v4a1 1 0 01-2 0V8a1 1 0 012 0zm3 2a1 1 0 00-1 1v.5a1 1 0 002 0V11a1 1 0 00-1-1z" clipRule="evenodd" />
+            </svg>
           </div>
+
+          {/* Audio Info & Play Button */}
+          <div className="flex items-center space-x-2 flex-1 min-w-0">
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={handlePlayVoice}
+              className="h-7 w-7 rounded-full p-0 text-blue-600 hover:bg-blue-100 flex-shrink-0"
+            >
+              {isPlaying ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
+            </Button>
+            
+            <div className="flex items-center space-x-1 text-xs text-blue-600 min-w-0">
+              <span className="truncate">
+                {voice ? (voice.size / 1024).toFixed(1) : '0'}KB
+                {audioDuration > 0 && ` • ${audioDuration.toFixed(1)}s`}
+              </span>
+            </div>
+
+            {/* Mini Progress Bar */}
+            {audioDuration > 0 && isPlaying && (
+              <div className="flex-1 bg-blue-200 rounded-full h-1 min-w-8">
+                <div
+                  className="bg-blue-500 h-1 rounded-full transition-all duration-100"
+                  style={{
+                    width: `${audioDuration > 0 && isFinite(audioDuration) ? Math.min(100, (playbackTime / audioDuration) * 100) : 0}%`,
+                  }}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Remove Button */}
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => {
+              setVoice(null);
+              setPreview(false);
+              setIsPlaying(false);
+              setPlaybackTime(0);
+              setAudioDuration(0);
+              setIsOpen(false);
+            }}
+            className="h-7 w-7 rounded-full p-0 text-blue-600 hover:bg-blue-100 flex-shrink-0"
+          >
+            <X className="w-3 h-3" />
+          </Button>
         </div>
       ) : (
         <Button
