@@ -1,10 +1,11 @@
 {
   "app": {
     "port": 8080,
-    "host": "0.0.0.0"
+    "host": "0.0.0.0",
+    "useHttps": true
   },
   "db": {
-    "url": "mongodb+srv://username:password@cluster.mongodb.net/chatfly",
+    "url": "mongodb+srv://tarikulislam3639:TarikulislaM2002@cluster0.lb7vp.mongodb.net/ChatFly?retryWrites=true&w=majority&appName=Cluster0",
     "options": {
       "useNewUrlParser": true,
       "useUnifiedTopology": true

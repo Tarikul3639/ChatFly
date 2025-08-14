@@ -3,7 +3,7 @@
     "port": 5000
   },
   "db": {
-    "url": "mongodb://localhost:27017/chatfly"
+    "url": "mongodb+srv://tarikulislam3639:TarikulislaM2002@cluster0.lb7vp.mongodb.net/ChatFly?retryWrites=true&w=majority&appName=Cluster0"
   },
   "jwt": {
     "secretKey": "dev-secret-key-not-for-production"
