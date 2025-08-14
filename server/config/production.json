@@ -1,0 +1,29 @@
+{
+  "app": {
+    "port": 8080,
+    "host": "0.0.0.0"
+  },
+  "db": {
+    "url": "mongodb+srv://username:password@cluster.mongodb.net/chatfly",
+    "options": {
+      "useNewUrlParser": true,
+      "useUnifiedTopology": true
+    }
+  },
+  "jwt": {
+    "secretKey": "your-production-secret-key-change-this",
+    "expiresIn": "24h"
+  },
+  "cors": {
+    "origin": ["https://your-domain.com"],
+    "credentials": true
+  },
+  "chat": {
+    "maxMessageLength": 1000,
+    "maxRoomMembers": 50
+  },
+  "upload": {
+    "maxFileSize": "10MB",
+    "allowedTypes": ["image/jpeg", "image/png", "image/gif"]
+  }
+}

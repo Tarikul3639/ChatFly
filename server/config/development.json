@@ -1,0 +1,14 @@
+{
+  "app": {
+    "port": 5000
+  },
+  "db": {
+    "url": "mongodb://localhost:27017/chatfly"
+  },
+  "jwt": {
+    "secretKey": "dev-secret-key-not-for-production"
+  },
+  "cors": {
+    "origin": ["http://localhost:3000", "http://localhost:5173", "http://localhost:8080"]
+  }
+}

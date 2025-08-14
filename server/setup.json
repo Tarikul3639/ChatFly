@@ -1,0 +1,11 @@
+{
+  "dependencies": {
+    "express": "npm install express"
+  },
+  "devDependencies": {
+    "typescript, ts-node-dev, @types/node, @types/express": "npm install --save-dev typescript ts-node-dev @types/node @types/express",
+    "PM2": "npm install -g pm2",
+    "config": "npm install config",
+    "TypeScript type definitions": "npm install --save-dev @types/config"
+  }
+}
