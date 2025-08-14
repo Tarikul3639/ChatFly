@@ -1,24 +1,37 @@
 import express, { Request, Response } from "express";
-import { createServer } from "https";
+import { createServer as createHttpServer } from "http";
+import { createServer as createHttpsServer } from "https";
 import { Server } from "socket.io";
 import { connectDB } from "./config/db";
 import { configureSockets } from "./config/socket";
+import routes from "./routes";
+import { requestLogger } from "./utils/middleware";
 import config from "config";
 import fs from "fs";
 
 const APP = express();
 const PORT = config.get("app.port");
 const HOST = config.get("app.host");
+const isProduction = process.env.NODE_ENV === "production";
 
-// SSL certificates
-const SSL_OPTIONS = {
-  key: fs.readFileSync("ssl/private-key.pem"),
-  cert: fs.readFileSync("ssl/certificate.pem"),
-};
-// Create HTTPS server
-const HTTPS_SERVER = createServer(SSL_OPTIONS, APP);
+let server;
+let protocol = "http";
 
-const io = new Server(HTTPS_SERVER, {
+if (isProduction) {
+  // Use HTTPS in production
+  const SSL_OPTIONS = {
+    key: fs.readFileSync("ssl/private-key.pem"),
+    cert: fs.readFileSync("ssl/certificate.pem"),
+  };
+  server = createHttpsServer(SSL_OPTIONS, APP);
+  protocol = "https";
+} else {
+  // Use HTTP in development to avoid certificate issues
+  server = createHttpServer(APP);
+  protocol = "http";
+}
+
+const io = new Server(server, {
   cors: {
     origin: config.get("cors.origin"),
     methods: ["GET", "POST"],
@@ -33,6 +46,11 @@ configureSockets(io);
 
 // Middleware
 APP.use(express.json());
+APP.use(express.urlencoded({ extended: true }));
+APP.use(requestLogger); // Log all requests
+
+// API Routes
+APP.use("/api", routes);
 
 APP.get("/", (req: Request, res: Response) => {
   res.json({
@@ -40,12 +58,17 @@ APP.get("/", (req: Request, res: Response) => {
     app: config.get("app.name"),
     version: config.get("app.version"),
     environment: process.env.NODE_ENV,
+    protocol: protocol.toUpperCase(),
   });
 });
 
-HTTPS_SERVER.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(
-    `${config.get("app.name")} server running at https://${HOST}:${PORT}`
+    `${config.get("app.name")} server running at ${protocol}://${HOST}:${PORT}`
   );
   console.log(`Environment: ${process.env.NODE_ENV}`);
+  console.log(`Protocol: ${protocol.toUpperCase()}`);
+  if (!isProduction) {
+    console.log("💡 Using HTTP for development. Set NODE_ENV=production for HTTPS.");
+  }
 });

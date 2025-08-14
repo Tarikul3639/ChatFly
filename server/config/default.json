@@ -14,7 +14,7 @@
     }
   },
   "jwt": {
-    "secretKey": "your-super-secret-jwt-key-change-this-in-production",
+    "secret": "your-super-secret-jwt-key-change-this-in-production",
     "expiresIn": "24h"
   },
   "cors": {
