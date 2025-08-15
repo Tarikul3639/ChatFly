@@ -1,3 +1,5 @@
+"use client";
+
 import { useChat } from '@/hooks/useChat';
 import ChatHeader from './ChatHeader';
 import { Message } from '@/components/message';

@@ -1,9 +1,10 @@
-import type { Metadata, Viewport } from "next";
-import React from "react";
 import { Geist, Geist_Mono } from "next/font/google";
+import RegisterServiceWorker from "@/components/core/RegisterServiceWorker";
+import { metadata, viewport } from "@/components/core/metadata";
+// import AppProtection from "@/components/core/AppProtection";
 import { SocketProvider } from "@/context/SocketContext";
 import { AuthProvider } from "@/context/AuthContext";
-// import AppProtection from "@/components/AppProtection";
+import React from "react";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -16,51 +17,8 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "ChatFly",
-  description: "ChatFly - Your AI Chat Companion",
-  manifest: "/manifest.json",
-  icons: {
-    icon: [
-      { url: "/favicon.svg", type: "image/svg+xml" },
-      {
-        url: "/icons/icon-192x192.svg",
-        sizes: "192x192",
-        type: "image/svg+xml",
-      },
-      {
-        url: "/icons/icon-512x512.svg",
-        sizes: "512x512",
-        type: "image/svg+xml",
-      },
-    ],
-    apple: "/icons/icon-192x192.svg",
-  },
-  appleWebApp: {
-    title: "ChatFly",
-    statusBarStyle: "default",
-    capable: true,
-  },
-  openGraph: {
-    title: "ChatFly",
-    description: "ChatFly - Your AI Chat Companion",
-    type: "website",
-  },
-  twitter: {
-    title: "ChatFly",
-    description: "ChatFly - Your AI Chat Companion",
-    card: "summary",
-  },
-};
-
-export const viewport: Viewport = {
-  width: "device-width",
-  initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
-  viewportFit: "cover",
-  themeColor: "#0f172a",
-};
+export { metadata };
+export { viewport };
 
 export default function RootLayout({
   children,
@@ -81,32 +39,15 @@ export default function RootLayout({
         <meta name="msapplication-tap-highlight" content="no" />
         <link rel="apple-touch-icon" href="/icons/icon-192x192.svg" />
         <link rel="apple-touch-startup-image" href="/icons/icon-512x512.svg" />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              if ('serviceWorker' in navigator) {
-                window.addEventListener('load', () => {
-                  navigator.serviceWorker.register('/sw.js')
-                    .then((registration) => {
-                      console.log('SW registered: ', registration);
-                    })
-                    .catch((registrationError) => {
-                      console.log('SW registration failed: ', registrationError);
-                    });
-                });
-              }
-            `,
-          }}
-        />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning
       >
+        <RegisterServiceWorker />
+        {/* <AppProtection /> */}
         <AuthProvider>
           <SocketProvider>
-            {/* protection system here */}
-            {/* <AppProtection /> */}
             {children}
           </SocketProvider>
         </AuthProvider>

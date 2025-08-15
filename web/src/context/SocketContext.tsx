@@ -27,23 +27,23 @@ export const SocketProvider = ({ children }: SocketProviderProps) => {
     
     useEffect(() => {
         if (user && token) {
-            const newSocket = io(process.env.NEXT_PUBLIC_BACKEND_URL!, {
+            const ws = io(process.env.NEXT_PUBLIC_BACKEND_URL!, {
                 auth: { token },
             });
             console.log("Socket connecting...");
 
-            setSocket(newSocket);
+            setSocket(ws);
 
-            newSocket.on("connect", () => {
-                console.log("Socket connected", newSocket.id);
+            ws.on("connect", () => {
+                console.log("Socket connected", ws.id);
             });
 
-            newSocket.on("connect_error", (err) => {
+            ws.on("connect_error", (err) => {
                 console.error("Socket connection error:", err);
             });
 
             return () => {
-                if (newSocket.connected) newSocket.disconnect();
+                if (ws.connected) ws.disconnect();
                 setSocket(null);
                 console.log("Socket disconnected");
             };

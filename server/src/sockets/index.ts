@@ -52,10 +52,10 @@ export const setupSocket = (io: Server) => {
         }
     });
     io.on("connection", (socket: AuthenticatedSocket) => {
-        console.log("✅ New socket connected:", socket.id, "User:", socket.user?.username);
+        console.log("✅ New socket connected:", socket.id, "👤 User:", socket.user?.username);
 
         socket.on("disconnect", () => {
-            console.log("Socket disconnected:", socket.id);
+            console.log("❌ Socket disconnected:", socket.id, "👤 User:", socket.user?.username);
         });
     });
 };

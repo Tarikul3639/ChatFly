@@ -1,5 +1,3 @@
-// Shared types and data for chat functionality
-
 export interface Chat {
   id: number;
   name: string;
