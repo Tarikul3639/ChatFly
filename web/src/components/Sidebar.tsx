@@ -1,7 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { BotMessageSquare, MessageCircle, BookOpen, User, LogOut } from "lucide-react";
+import {
+  BotMessageSquare,
+  MessageCircle,
+  BookOpen,
+  User,
+  LogOut,
+} from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
@@ -16,8 +22,7 @@ const sidebarItems = [
 const mobileSidebarItems = [
   { id: "chat", label: "Chat", icon: MessageCircle },
   { id: "classroom", label: "Classroom", icon: BookOpen },
-  { id: "profile", label: "Profile", icon: User },
-  { id: "logout", label: "Logout", icon: LogOut },
+  { id: "profile", label: "Profile", icon: User }
 ];
 
 export default function Sidebar() {
@@ -25,11 +30,6 @@ export default function Sidebar() {
   const router = useRouter();
   const pathname = usePathname();
   const { user, logout } = useAuth();
-
-  useEffect(() => {
-    // User data is now coming from AuthContext
-    // No need to set local user state
-  }, []);
 
   // Set active tab based on current pathname
   useEffect(() => {
@@ -72,15 +72,15 @@ export default function Sidebar() {
         <div className="mt-auto space-y-4">
           <button
             onClick={logout}
-            className="w-10 h-10 rounded-xl flex items-center justify-center transition-all text-white/70 hover:text-white hover:bg-red-500/20"
+            className="w-12 h-12 rounded-xl flex items-center justify-center transition-all text-white/70 hover:text-white hover:bg-red-500/20"
             title="Logout"
           >
             <LogOut className="w-5 h-5" />
           </button>
 
           <Avatar className="w-12 h-12 border-2 border-white/20">
-            <AvatarFallback className="bg-white/20 text-white">
-              {user?.name?.charAt(0) || user?.email?.charAt(0) || "U"}
+            <AvatarFallback className="bg-white/20 text-white uppercase font-semibold text-base">
+              {user?.username?.slice(0, 2) || user?.email?.slice(0, 2) || "U"}
             </AvatarFallback>
           </Avatar>
         </div>
@@ -93,12 +93,8 @@ export default function Sidebar() {
             <button
               key={item.id}
               onClick={() => {
-                if (item.id === "logout") {
-                  logout();
-                } else {
-                  setActiveTab(item.id);
-                  router.push(`/dashboard/${item.id}`);
-                }
+                setActiveTab(item.id);
+                router.push(`/dashboard/${item.id}`);
               }}
               className={`flex flex-col items-center space-y-1 p-2 rounded-lg transition-all ${
                 activeTab === item.id
@@ -108,20 +104,24 @@ export default function Sidebar() {
                   : "text-gray-500 hover:text-gray-700"
               }`}
             >
-              <item.icon className={`w-4 h-4 ${
-                activeTab === item.id 
-                  ? "text-blue-600" 
-                  : item.id === "logout"
-                  ? "text-red-500"
-                  : "text-gray-500"
-              }`} />
-              <span className={`text-[11px] font-medium ${
-                activeTab === item.id 
-                  ? "text-blue-600" 
-                  : item.id === "logout"
-                  ? "text-red-500"
-                  : "text-gray-500"
-              }`}>
+              <item.icon
+                className={`w-4 h-4 ${
+                  activeTab === item.id
+                    ? "text-blue-600"
+                    : item.id === "logout"
+                    ? "text-red-500"
+                    : "text-gray-500"
+                }`}
+              />
+              <span
+                className={`text-[11px] font-medium ${
+                  activeTab === item.id
+                    ? "text-blue-600"
+                    : item.id === "logout"
+                    ? "text-red-500"
+                    : "text-gray-500"
+                }`}
+              >
                 {item.label}
               </span>
             </button>

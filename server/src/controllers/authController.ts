@@ -8,7 +8,6 @@ import bcrypt from "bcryptjs";
 interface ITokenPayload {
   _id: string;
   email: string;
-  username: string;
   iat?: number;
   exp?: number;
 }
@@ -39,7 +38,6 @@ export const verifyToken = async (req: Request, res: Response) => {
     const user = await User.findOne({
       _id: decoded._id,
       email: decoded.email,
-      username: decoded.username,
     }).select("-password"); // sensitive data exclude
 
     if (!user) {
@@ -165,7 +163,7 @@ export const login = async (req: Request, res: Response) => {
     if (!key) throw new Error("JWT secret key not found");
 
     const token = jwt.sign(
-      { _id: user._id.toString(), email: user.email, username: user.username },
+      { _id: user._id.toString(), email: user.email },
       key,
       { expiresIn: "7d" }
     );
@@ -232,20 +230,42 @@ export const getProfile = async (req: Request, res: Response) => {
 };
 
 // Update user profile
-export const updateProfile = async (req: Request, res: Response) => {
+export const profileUpdate = async (req: Request, res: Response) => {
   try {
-    const { username, avatar } = req.body;
+    const { id, username } = req.body;
 
-    // TODO: Update user in database
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: "User ID is required",
+      });
+    }
+
+    // Update only specific fields
+    const updateData: Partial<{ username: string }> = {};
+    if (username) updateData.username = username.trim();
+
+    const updatedUser = await User.findByIdAndUpdate(
+      id,
+      { $set: updateData },
+      { new: true, runValidators: true, select: "username avatar email" }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
 
     res.status(200).json({
       success: true,
       message: "Profile updated successfully",
-      data: {
-        user: {
-          username: username || "Mock User",
-          avatar,
-        },
+      user: {
+        id: updatedUser.id,
+        username: updatedUser.username,
+        avatar: updatedUser.avatar,
+        email: updatedUser.email,
       },
     });
   } catch (error) {

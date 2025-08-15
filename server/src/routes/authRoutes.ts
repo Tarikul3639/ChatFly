@@ -5,7 +5,7 @@ import {
   login,
   logout,
   getProfile,
-  updateProfile,
+  profileUpdate,
 } from "../controllers/authController";
 
 const router = Router();
@@ -18,6 +18,6 @@ router.post("/login", login);
 // Protected routes (require authentication)
 router.post("/logout", logout);
 router.get("/profile", getProfile);
-router.put("/profile", updateProfile);
+router.put("/profile", profileUpdate);
 
 export default router;

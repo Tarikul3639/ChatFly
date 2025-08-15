@@ -5,15 +5,15 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 
 // -------------------- Types & Interfaces --------------------
-interface User {
+interface IUser {
   id: string;
   email: string;
-  name?: string;
+  username?: string;
   avatar?: string;
 }
 
 interface AuthContextType {
-  user: User | null;
+  user: IUser | null;
   token: string | null;
   login: (
     email: string,
@@ -23,13 +23,24 @@ interface AuthContextType {
   signup: (
     email: string,
     password: string,
-    name: string
+    username: string
   ) => Promise<{ success: boolean; message: string }>;
   logout: () => void;
+  profileUpdate: (userData: Partial<IUser>) => Promise<{ success: boolean; message: string }>;
   isLoading: boolean;
   isAuthenticated: boolean;
 }
 
+interface IUpdateResponse {
+  success: boolean;
+  message: string;
+  user: {
+    id: string;
+    email: string;
+    username: string;
+    avatar?: string | null;
+  };
+}
 interface IVerifyUser {
   id: string;
   username: string;
@@ -80,7 +91,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   // ---------- State ----------
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<IUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [token, setToken] = useState<string | null>(null);
   const router = useRouter();
@@ -125,7 +136,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           setUser({
             id: data.data.user.id,
             email: data.data.user.email,
-            name: data.data.user.username,
+            username: data.data.user.username,
             avatar: data.data.user.avatar ?? undefined,
           });
 
@@ -223,6 +234,49 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
+  // ---------- Update Profile ----------
+const profileUpdate = async (userData: Partial<IUser>) => {
+  try {
+    setIsLoading(true);
+
+    const response = await axios.put<IUpdateResponse>(
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/profile`,
+      userData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+   
+    const data = response.data;
+
+    if (response.status === 200 && data.success) {
+      setUser((prev) =>
+        prev
+          ? {
+              ...prev,
+              username: data.user.username,
+              avatar: data.user.avatar ?? undefined,
+              email: data.user.email ?? prev.email,
+            }
+          : prev
+      );
+      return { success: true, message: data.message };
+    }
+
+    return { success: false, message: data.message };
+  } catch (error: unknown) {
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : "Update failed",
+    };
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+
   // ---------- Logout ----------
   const logout = () => {
     clearAuthData();
@@ -236,6 +290,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     login,
     signup,
     logout,
+    profileUpdate,
     isLoading,
     isAuthenticated: !!user,
   };
