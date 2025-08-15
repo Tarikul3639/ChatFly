@@ -2,8 +2,8 @@ import express, { Request, Response } from "express";
 import { createServer as createHttpServer } from "http";
 import { createServer as createHttpsServer } from "https";
 import { Server } from "socket.io";
+import { setupSocket } from "./sockets/index";
 import { connectDB } from "./config/db";
-import { configureSockets } from "./config/socket";
 import routes from "./routes";
 import { requestLogger } from "./utils/middleware";
 import config from "config";
@@ -43,7 +43,7 @@ const io = new Server(server, {
 connectDB();
 
 // Attach socket handlers
-configureSockets(io);
+setupSocket(io);
 
 // Middleware
 
