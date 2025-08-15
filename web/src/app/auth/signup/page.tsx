@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -69,18 +70,41 @@ export default function SignupPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [name, setName] = useState("");
+  const [username, setUsername] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
+  
   const router = useRouter();
+  const { signup, isLoading } = useAuth();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
+
     if (password !== confirmPassword) {
-      alert("Passwords do not match");
+      setError("Passwords do not match");
       return;
     }
-    // Simulate signup
-    localStorage.setItem("chatfly-user", JSON.stringify({ email, name }));
-    router.push("/dashboard");
+
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters long");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const {success, message} = await signup(email, password, username);
+      if (success) {
+        router.push("/auth/login");
+      } else {
+        setError(message);
+      }
+    } catch (err) {
+      setError("An error occurred during signup. Please try again.");
+      console.error("Signup error:", err);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -139,6 +163,11 @@ export default function SignupPage() {
               </div>
             </CardHeader>
             <CardContent>
+              {error && (
+                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-600 text-sm">
+                  {error}
+                </div>
+              )}
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">Full Name</Label>
@@ -147,8 +176,8 @@ export default function SignupPage() {
                       id="name"
                       type="text"
                       placeholder="Enter your full name"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
                       required
                       className="h-11 px-10"
                     />
@@ -242,9 +271,10 @@ export default function SignupPage() {
                 </div>
                 <Button
                   type="submit"
-                  className="w-full h-11 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700"
+                  disabled={isSubmitting || isLoading}
+                  className="w-full h-11 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Create Account
+                  {isSubmitting || isLoading ? "Creating Account..." : "Create Account"}
                 </Button>
               </form>
 

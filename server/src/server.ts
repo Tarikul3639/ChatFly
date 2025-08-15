@@ -34,6 +34,7 @@ if (isProduction) {
 const io = new Server(server, {
   cors: {
     origin: config.get("cors.origin"),
+    credentials: true,
     methods: ["GET", "POST"],
   },
 });
@@ -45,9 +46,15 @@ connectDB();
 configureSockets(io);
 
 // Middleware
+
+import cors from "cors";
 APP.use(express.json());
 APP.use(express.urlencoded({ extended: true }));
 APP.use(requestLogger); // Log all requests
+APP.use(cors({
+  origin: config.get("cors.origin"),
+  credentials: true
+}));
 
 // API Routes
 APP.use("/api", routes);

@@ -1,17 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { BotMessageSquare, MessageCircle, BookOpen, User } from "lucide-react";
+import { BotMessageSquare, MessageCircle, BookOpen, User, LogOut } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useRouter, usePathname } from "next/navigation";
-
-// Define types
-interface User {
-  id: number;
-  name: string;
-  email: string;
-  role: string;
-}
+import { useAuth } from "@/context/AuthContext";
 
 const sidebarItems = [
   { id: "chat", label: "Messenger", icon: MessageCircle, active: true },
@@ -24,22 +17,18 @@ const mobileSidebarItems = [
   { id: "chat", label: "Chat", icon: MessageCircle },
   { id: "classroom", label: "Classroom", icon: BookOpen },
   { id: "profile", label: "Profile", icon: User },
+  { id: "logout", label: "Logout", icon: LogOut },
 ];
 
 export default function Sidebar() {
   const [activeTab, setActiveTab] = useState("chat");
-  const [user, setUser] = useState<User | null>(null);
   const router = useRouter();
   const pathname = usePathname();
+  const { user, logout } = useAuth();
 
   useEffect(() => {
-    const userData = {
-      id: 1,
-      name: "John Doe",
-      email: "john.doe@example.com",
-      role: "student",
-    };
-    setUser(userData);
+    // User data is now coming from AuthContext
+    // No need to set local user state
   }, []);
 
   // Set active tab based on current pathname
@@ -80,10 +69,18 @@ export default function Sidebar() {
           ))}
         </div>
 
-        <div className="mt-auto">
+        <div className="mt-auto space-y-4">
+          <button
+            onClick={logout}
+            className="w-10 h-10 rounded-xl flex items-center justify-center transition-all text-white/70 hover:text-white hover:bg-red-500/20"
+            title="Logout"
+          >
+            <LogOut className="w-5 h-5" />
+          </button>
+
           <Avatar className="w-12 h-12 border-2 border-white/20">
             <AvatarFallback className="bg-white/20 text-white">
-              {user?.name?.charAt(0) || "U"}
+              {user?.name?.charAt(0) || user?.email?.charAt(0) || "U"}
             </AvatarFallback>
           </Avatar>
         </div>
@@ -96,17 +93,35 @@ export default function Sidebar() {
             <button
               key={item.id}
               onClick={() => {
-                setActiveTab(item.id);
-                router.push(`/dashboard/${item.id}`);
+                if (item.id === "logout") {
+                  logout();
+                } else {
+                  setActiveTab(item.id);
+                  router.push(`/dashboard/${item.id}`);
+                }
               }}
               className={`flex flex-col items-center space-y-1 p-2 rounded-lg transition-all ${
                 activeTab === item.id
                   ? "text-blue-600"
+                  : item.id === "logout"
+                  ? "text-red-500 hover:text-red-700"
                   : "text-gray-500 hover:text-gray-700"
               }`}
             >
-              <item.icon className={`w-4 h-4 ${activeTab === item.id ? "text-blue-600" : "text-gray-500"}`} />
-              <span className={`text-[11px] font-medium ${activeTab === item.id ? "text-blue-600" : "text-gray-500"}`}>
+              <item.icon className={`w-4 h-4 ${
+                activeTab === item.id 
+                  ? "text-blue-600" 
+                  : item.id === "logout"
+                  ? "text-red-500"
+                  : "text-gray-500"
+              }`} />
+              <span className={`text-[11px] font-medium ${
+                activeTab === item.id 
+                  ? "text-blue-600" 
+                  : item.id === "logout"
+                  ? "text-red-500"
+                  : "text-gray-500"
+              }`}>
                 {item.label}
               </span>
             </button>

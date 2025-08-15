@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -69,14 +70,35 @@ const SOCIALS = [
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
+  const [rememberMe, setRememberMe] = useState<boolean>(true);
   const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [error, setError] = useState<string>("");
+  
   const router = useRouter();
+  const { login, isLoading } = useAuth();
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Simulate login - replace with actual authentication logic
-    localStorage.setItem("chatfly-user", JSON.stringify({ email }));
-    router.push("/dashboard");
+    setError("");
+    setIsSubmitting(true);
+
+    try {
+      const { success, message } = await login(email, password, rememberMe);
+      if (success) {
+        // Get redirect URL from query params or default to dashboard
+        const urlParams = new URLSearchParams(window.location.search);
+        const redirectTo = urlParams.get('redirect') || '/dashboard';
+        router.push(redirectTo);
+      } else {
+        setError(message);
+      }
+    } catch (err) {
+      setError("An error occurred during login. Please try again.");
+      console.error("Login error:", (err as any).message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -134,6 +156,11 @@ const LoginPage: React.FC = () => {
               </div>
             </CardHeader>
             <CardContent>
+              {error && (
+                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-600 text-sm">
+                  {error}
+                </div>
+              )}
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="email" className="text-gray-600 text-sm">
@@ -189,8 +216,10 @@ const LoginPage: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <Label className="flex items-center text-gray-600 text-sm">
                     <Input
-                      id="reminder"
+                      id="remember"
                       type="checkbox"
+                      checked={rememberMe}
+                      onChange={(e) => setRememberMe(e.target.checked)}
                       className="h-4 w-4 accent-blue-600"
                     />
                     <span className="ml-2">Remember Me</span>
@@ -204,9 +233,10 @@ const LoginPage: React.FC = () => {
                 </div>
                 <Button
                   type="submit"
-                  className="w-full h-11 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700"
+                  disabled={isSubmitting || isLoading}
+                  className="w-full h-11 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Sign In
+                  {isSubmitting || isLoading ? "Signing In..." : "Sign In"}
                 </Button>
               </form>
 

@@ -1,12 +1,14 @@
 import { Request, Response } from "express";
+import User from "../models/User";
 import jwt from "jsonwebtoken";
 import config from "config";
+import bcrypt from "bcryptjs";
 
 // Register user
 export const register = async (req: Request, res: Response) => {
   try {
     const { username, email, password } = req.body;
-
+    
     // Validation
     if (!username || !email || !password) {
       return res.status(400).json({
@@ -16,17 +18,28 @@ export const register = async (req: Request, res: Response) => {
     }
 
     // TODO: Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        message: "User already exists",
+      });
+    }
+
     // TODO: Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
     // TODO: Create user in database
+    await User.create({
+      username,
+      email,
+      password: hashedPassword,
+    });
 
     // For now, return success response
     res.status(201).json({
       success: true,
       message: "User registered successfully",
-      data: {
-        username,
-        email,
-      },
     });
   } catch (error) {
     console.error("Register error:", error);
@@ -40,25 +53,45 @@ export const register = async (req: Request, res: Response) => {
 // Login user
 export const login = async (req: Request, res: Response) => {
   try {
-    const { email, password } = req.body;
-
-    // Validation
-    if (!email || !password) {
-      return res.status(400).json({
-        success: false,
-        message: "Please provide email and password",
-      });
+    interface ILoginUser {
+      _id: { toString(): string };
+      email: string;
+      username: string;
+      password: string;
     }
 
-    // TODO: Find user in database
-    // TODO: Verify password
-    // TODO: Generate JWT token
+    const { email, password } = req.body;
 
-    // For now, generate a mock token
+    if (!email || !password) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Please provide email and password" });
+    }
+
+    const user = (await User.findOne({ email }).select(
+      "+password"
+    )) as ILoginUser | null;
+
+    if (!user) {
+      return res
+        .status(401)
+        .json({ success: false, message: "User not found" });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res
+        .status(401)
+        .json({ success: false, message: "Password is incorrect" });
+    }
+
+    const key = config.get("jwt.secret") as string;
+    if (!key) throw new Error("JWT secret key not found");
+
     const token = jwt.sign(
-      { userId: "mock-user-id", email },
-      config.get("jwt.secret") || "fallback-secret",
-      { expiresIn: config.get("jwt.expiresIn") || "7d" }
+      { _id: user._id.toString(), email: user.email, username: user.username },
+      key,
+      { expiresIn: "7d" }
     );
 
     res.status(200).json({
@@ -67,17 +100,15 @@ export const login = async (req: Request, res: Response) => {
       data: {
         token,
         user: {
-          email,
-          username: "Mock User",
+          id: user._id.toString(),
+          email: user.email,
+          username: user.username,
         },
       },
     });
   } catch (error) {
     console.error("Login error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Internal server error",
-    });
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
 
@@ -85,7 +116,7 @@ export const login = async (req: Request, res: Response) => {
 export const logout = async (req: Request, res: Response) => {
   try {
     // TODO: Invalidate token (add to blacklist)
-    
+
     res.status(200).json({
       success: true,
       message: "Logout successful",
@@ -103,7 +134,7 @@ export const logout = async (req: Request, res: Response) => {
 export const getProfile = async (req: Request, res: Response) => {
   try {
     // TODO: Get user from database using req.user.id
-    
+
     res.status(200).json({
       success: true,
       data: {
@@ -130,7 +161,7 @@ export const updateProfile = async (req: Request, res: Response) => {
     const { username, avatar } = req.body;
 
     // TODO: Update user in database
-    
+
     res.status(200).json({
       success: true,
       message: "Profile updated successfully",

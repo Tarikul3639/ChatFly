@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import React from "react";
 import { Geist, Geist_Mono } from "next/font/google";
+import { AuthProvider } from "@/context/AuthContext";
 // import AppProtection from "@/components/AppProtection";
 import "./globals.css";
 
@@ -93,9 +94,11 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning
       >
-        {/* protection system here */}
-        {/* <AppProtection /> */}
-        {children}
+        <AuthProvider>
+          {/* protection system here */}
+          {/* <AppProtection /> */}
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );
