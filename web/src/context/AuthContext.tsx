@@ -14,6 +14,7 @@ interface User {
 
 interface AuthContextType {
   user: User | null;
+  token: string | null;
   login: (
     email: string,
     password: string,
@@ -81,6 +82,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   // ---------- State ----------
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [token, setToken] = useState<string | null>(null);
   const router = useRouter();
 
   // ---------- Effect: Check Auth on Mount ----------
@@ -118,13 +120,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         const data = response.data;
 
         if (response.status === 200 && data.success && data.data.user) {
+          setToken(storedToken);
           setUser({
             id: data.data.user.id,
             email: data.data.user.email,
             name: data.data.user.username,
             avatar: data.data.user.avatar ?? undefined,
           });
-
+          
           document.cookie = `chatfly-token=${storedToken}; path=/; max-age=${
             7 * 24 * 60 * 60
           }; Secure; SameSite=Strict`;
@@ -225,6 +228,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   // ---------- Context Value ----------
   const value = {
     user,
+    token,
     login,
     signup,
     logout,
@@ -233,5 +237,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   // ---------- Render ----------
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
 };

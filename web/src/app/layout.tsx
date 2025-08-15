@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import React from "react";
 import { Geist, Geist_Mono } from "next/font/google";
+import { SocketProvider } from "@/context/SocketContext";
 import { AuthProvider } from "@/context/AuthContext";
 // import AppProtection from "@/components/AppProtection";
 import "./globals.css";
@@ -22,8 +23,16 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       { url: "/favicon.svg", type: "image/svg+xml" },
-      { url: "/icons/icon-192x192.svg", sizes: "192x192", type: "image/svg+xml" },
-      { url: "/icons/icon-512x512.svg", sizes: "512x512", type: "image/svg+xml" }
+      {
+        url: "/icons/icon-192x192.svg",
+        sizes: "192x192",
+        type: "image/svg+xml",
+      },
+      {
+        url: "/icons/icon-512x512.svg",
+        sizes: "512x512",
+        type: "image/svg+xml",
+      },
     ],
     apple: "/icons/icon-192x192.svg",
   },
@@ -95,9 +104,11 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <AuthProvider>
-          {/* protection system here */}
-          {/* <AppProtection /> */}
-          {children}
+          <SocketProvider>
+            {/* protection system here */}
+            {/* <AppProtection /> */}
+            {children}
+          </SocketProvider>
         </AuthProvider>
       </body>
     </html>

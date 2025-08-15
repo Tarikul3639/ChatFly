@@ -46,7 +46,7 @@ export default function DashboardLayout({
       {!isConversationPage && (
         <div className="shrink-0">
           <Sidebar />
-        </div>
+        </div>  
       )}
       
       {isConversationPage && (
