@@ -17,7 +17,7 @@ export default function AuthDemoPage() {
             Authentication System Demo
           </h1>
           <p className="text-gray-600">
-            Testing ChatFly's authentication and route protection
+            Testing ChatFly&apos;s authentication and route protection
           </p>
         </div>
 

@@ -88,6 +88,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   // ---------- Effect: Check Auth on Mount ----------
   useEffect(() => {
     checkAuthStatus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ---------- Helper: Clear Auth Data ----------
@@ -127,7 +128,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             name: data.data.user.username,
             avatar: data.data.user.avatar ?? undefined,
           });
-          
+
           document.cookie = `chatfly-token=${storedToken}; path=/; max-age=${
             7 * 24 * 60 * 60
           }; Secure; SameSite=Strict`;
@@ -135,7 +136,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           clearAuthData();
         }
       }
-    } catch (error) {
+    } catch (error: unknown) {
+      console.error("Auth check failed:", error);
       clearAuthData();
     } finally {
       setIsLoading(false);
@@ -179,9 +181,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
       return { success: false, message: data.message };
     } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Login failed";
+
       return {
         success: false,
-        message: (error as any)?.response?.data?.message || "Login failed",
+        message,
       };
     } finally {
       setIsLoading(false);
@@ -209,10 +213,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       }
 
       return { success: false, message: data.message };
-    } catch (error) {
+    } catch (error: unknown) {
       return {
         success: false,
-        message: (error as any)?.response?.data?.message || "Signup failed",
+        message: error instanceof Error ? error.message : "Signup failed",
       };
     } finally {
       setIsLoading(false);
@@ -237,9 +241,5 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   // ---------- Render ----------
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

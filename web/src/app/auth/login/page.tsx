@@ -95,7 +95,7 @@ const LoginPage: React.FC = () => {
       }
     } catch (err) {
       setError("An error occurred during login. Please try again.");
-      console.error("Login error:", (err as any).message);
+      console.error("Login error:", (err as Error).message);
     } finally {
       setIsSubmitting(false);
     }
