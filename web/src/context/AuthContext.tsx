@@ -18,7 +18,11 @@ interface AuthContextType {
     password: string,
     rememberMe: boolean
   ) => Promise<{ success: boolean; message: string }>;
-  signup: (email: string, password: string, name: string) => Promise<{ success: boolean; message: string }>;
+  signup: (
+    email: string,
+    password: string,
+    name: string
+  ) => Promise<{ success: boolean; message: string }>;
   logout: () => void;
   isLoading: boolean;
   isAuthenticated: boolean;
@@ -46,30 +50,73 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     checkAuthStatus();
   }, []);
 
+  // Helper to clear localStorage & cookie
+  const clearAuthData = () => {
+    localStorage.removeItem("chatfly-user");
+    localStorage.removeItem("chatfly-token");
+    document.cookie =
+      "chatfly-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+  };
+
+  interface IVerifyUser {
+    id: string;
+    username: string;
+    email: string;
+    avatar?: string | null;
+  }
+
+  interface IVerifyResponse {
+    success: boolean;
+    message: string;
+    data: {
+      user: IVerifyUser;
+    };
+  }
+
   const checkAuthStatus = async () => {
     try {
       setIsLoading(true);
 
-      // Check localStorage for user data
       const storedUser = localStorage.getItem("chatfly-user");
       const storedToken = localStorage.getItem("chatfly-token");
 
       if (storedUser && storedToken) {
-        const userData = JSON.parse(storedUser);
-        setUser(userData);
+        console.log("Verifying token with backend...");
 
-        // Set cookie for middleware
-        document.cookie = `chatfly-token=${storedToken}; path=/; max-age=${
-          7 * 24 * 60 * 60
-        }`; // 7 days
+        // Verify token with server
+        const response = await axios.get<IVerifyResponse>(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/verify`,
+          {
+            headers: {
+              Authorization: `Bearer ${storedToken}`,
+            },
+          }
+        );
+
+        const data = response.data;
+
+        if (response.status === 200 && data.success && data.data.user) {
+          setUser({
+            id: data.data.user.id,
+            email: data.data.user.email,
+            name: data.data.user.username,
+            avatar: data.data.user.avatar ?? undefined,
+          });
+
+          // Update cookie
+          document.cookie = `chatfly-token=${storedToken}; path=/; max-age=${
+            7 * 24 * 60 * 60
+          }; Secure; SameSite=Strict`;
+
+          console.log("Token verified, user set:", data.data.user);
+        } else {
+          console.warn("Token invalid or user data missing");
+          clearAuthData();
+        }
       }
     } catch (error) {
       console.error("Auth check failed:", error);
-      // Clear invalid data
-      localStorage.removeItem("chatfly-user");
-      localStorage.removeItem("chatfly-token");
-      document.cookie =
-        "chatfly-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+      clearAuthData();
     } finally {
       setIsLoading(false);
     }
@@ -163,14 +210,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       const data = response.data as ISignupResponse;
 
       if (response.status === 201 && data.success) {
-
         return { success: true, message: data.message };
       }
 
       return { success: false, message: data.message };
     } catch (error) {
       console.error((error as any)?.response?.data?.message);
-      return { success: false, message: (error as any)?.response?.data?.message || "Signup failed" };
+      return {
+        success: false,
+        message: (error as any)?.response?.data?.message || "Signup failed",
+      };
     } finally {
       setIsLoading(false);
     }
