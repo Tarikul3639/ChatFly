@@ -4,6 +4,7 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 
+// -------------------- Types & Interfaces --------------------
 interface User {
   id: string;
   email: string;
@@ -28,6 +29,41 @@ interface AuthContextType {
   isAuthenticated: boolean;
 }
 
+interface IVerifyUser {
+  id: string;
+  username: string;
+  email: string;
+  avatar?: string | null;
+}
+
+interface IVerifyResponse {
+  success: boolean;
+  message: string;
+  data: {
+    user: IVerifyUser;
+  };
+}
+
+interface ILoginResponseUser {
+  id: string;
+  email: string;
+  username: string;
+}
+interface ILoginResponse {
+  success: boolean;
+  message: string;
+  data: {
+    token: string;
+    user: ILoginResponseUser;
+  };
+}
+
+interface ISignupResponse {
+  success: boolean;
+  message: string;
+}
+
+// -------------------- Context & Hook --------------------
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const useAuth = () => {
@@ -38,19 +74,21 @@ export const useAuth = () => {
   return context;
 };
 
+// -------------------- Provider Component --------------------
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
+  // ---------- State ----------
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
-  // Check for existing session on mount
+  // ---------- Effect: Check Auth on Mount ----------
   useEffect(() => {
     checkAuthStatus();
   }, []);
 
-  // Helper to clear localStorage & cookie
+  // ---------- Helper: Clear Auth Data ----------
   const clearAuthData = () => {
     localStorage.removeItem("chatfly-user");
     localStorage.removeItem("chatfly-token");
@@ -58,21 +96,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       "chatfly-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
   };
 
-  interface IVerifyUser {
-    id: string;
-    username: string;
-    email: string;
-    avatar?: string | null;
-  }
-
-  interface IVerifyResponse {
-    success: boolean;
-    message: string;
-    data: {
-      user: IVerifyUser;
-    };
-  }
-
+  // ---------- Auth Check ----------
   const checkAuthStatus = async () => {
     try {
       setIsLoading(true);
@@ -81,8 +105,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       const storedToken = localStorage.getItem("chatfly-token");
 
       if (storedUser && storedToken) {
-        console.log("Verifying token with backend...");
-
         // Verify token with server
         const response = await axios.get<IVerifyResponse>(
           `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/verify`,
@@ -103,39 +125,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             avatar: data.data.user.avatar ?? undefined,
           });
 
-          // Update cookie
           document.cookie = `chatfly-token=${storedToken}; path=/; max-age=${
             7 * 24 * 60 * 60
           }; Secure; SameSite=Strict`;
-
-          console.log("Token verified, user set:", data.data.user);
         } else {
-          console.warn("Token invalid or user data missing");
           clearAuthData();
         }
       }
     } catch (error) {
-      console.error("Auth check failed:", error);
       clearAuthData();
     } finally {
       setIsLoading(false);
     }
   };
 
-  interface ILoginResponseUser {
-    id: string;
-    email: string;
-    username: string;
-  }
-  interface ILoginResponse {
-    success: boolean;
-    message: string;
-    data: {
-      token: string;
-      user: ILoginResponseUser;
-    };
-  }
-
+  // ---------- Login ----------
   const login = async (
     email: string,
     password: string,
@@ -144,41 +148,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       setIsLoading(true);
 
-      // Call backend login route
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/login`,
         { email, password }
       );
 
-      // Type the response according to backend
       const data = response.data as ILoginResponse;
 
       if (response.status === 200 && data.success) {
         const { user, token } = data.data;
 
         if (rememberMe) {
-          // Store in localStorage
           localStorage.setItem("chatfly-user", JSON.stringify(user));
           localStorage.setItem("chatfly-token", token);
         } else {
-          // Store in sessionStorage
           sessionStorage.setItem("chatfly-user", JSON.stringify(user));
           sessionStorage.setItem("chatfly-token", token);
         }
 
-        // Set cookie for middleware (optional)
         document.cookie = `chatfly-token=${token}; path=/; max-age=${
           7 * 24 * 60 * 60
         }; Secure; SameSite=Strict`;
 
-        // Update React state
         setUser(user);
         return { success: true, message: data.message };
       }
 
       return { success: false, message: data.message };
     } catch (error: unknown) {
-      console.error((error as any)?.response?.data?.message);
       return {
         success: false,
         message: (error as any)?.response?.data?.message || "Login failed",
@@ -188,11 +185,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
-  interface ISignupResponse {
-    success: boolean;
-    message: string;
-  }
-  // Sign up a new user
+  // ---------- Signup ----------
   const signup = async (
     email: string,
     password: string,
@@ -201,12 +194,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       setIsLoading(true);
 
-      // Call backend signup route
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/register`,
         { email, password, username }
       );
-      // Type the response according to backend
+
       const data = response.data as ISignupResponse;
 
       if (response.status === 201 && data.success) {
@@ -215,7 +207,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
       return { success: false, message: data.message };
     } catch (error) {
-      console.error((error as any)?.response?.data?.message);
       return {
         success: false,
         message: (error as any)?.response?.data?.message || "Signup failed",
@@ -225,19 +216,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
+  // ---------- Logout ----------
   const logout = () => {
-    // Clear localStorage
-    localStorage.removeItem("chatfly-user");
-    localStorage.removeItem("chatfly-token");
-
-    // Clear cookie
-    document.cookie =
-      "chatfly-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
-
-    setUser(null);
+    clearAuthData();
     router.push("/auth/login");
   };
 
+  // ---------- Context Value ----------
   const value = {
     user,
     login,
@@ -247,5 +232,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     isAuthenticated: !!user,
   };
 
+  // ---------- Render ----------
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
