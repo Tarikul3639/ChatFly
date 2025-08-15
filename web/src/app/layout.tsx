@@ -27,6 +27,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      {/* webcrx="" error showing from extension */}
       <head>
         <link rel="icon" href="/favicon.svg" />
         <link rel="manifest" href="/manifest.json" />
