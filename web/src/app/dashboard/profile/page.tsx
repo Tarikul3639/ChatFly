@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useProfile } from "@/context/ProfileContext";
+import { toast } from 'sonner'
 
 // Define types
 interface User {
@@ -60,9 +61,10 @@ export default function ProfilePage() {
 
     if (response.success) {
       setData((prev) => ({ ...prev, username: data.username }));
-      alert("Profile updated successfully!"); 
+      toast.success("Profile updated successfully!");
     } else {
       console.error(response.message);
+      toast.error(response.message);
     }
   };
 

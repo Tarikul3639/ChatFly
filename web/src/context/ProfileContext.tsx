@@ -79,9 +79,11 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({
         response?: { data?: { message: string } };
         message?: string;
       };
-      message = err.response?.data?.message || err.message || message;
 
-      return { success: false, message };
+      return { 
+        success: false, 
+        message: err.response?.data?.message || err.message || message 
+      };
     } finally {
       setIsLoading(false);
     }

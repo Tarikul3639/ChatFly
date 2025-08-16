@@ -4,6 +4,7 @@ import { metadata, viewport } from "@/components/core/metadata";
 // import AppProtection from "@/components/core/AppProtection";
 import { SocketProvider } from "@/context/SocketContext";
 import { AuthProvider } from "@/context/AuthContext";
+import { Toaster } from "sonner";
 import React from "react";
 import "./globals.css";
 
@@ -45,6 +46,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning
       >
+        <Toaster position="top-center" richColors />
         <RegisterServiceWorker />
         {/* <AppProtection /> */}
         <AuthProvider>

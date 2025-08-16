@@ -181,11 +181,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
       return { success: false, message: data.message };
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "Login failed";
-
+      let message = "Login failed";
+      const err = error as {
+        response?: { data?: { message: string } };
+        message?: string;
+      };
       return {
         success: false,
-        message,
+        message: err.response?.data?.message || err.message || message,
       };
     } finally {
       setIsLoading(false);
@@ -214,9 +217,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
       return { success: false, message: data.message };
     } catch (error: unknown) {
+      let message = "Signup failed";
+
+      const err = error as {
+        response?: { data?: { message: string } };
+        message?: string;
+      };
       return {
         success: false,
-        message: error instanceof Error ? error.message : "Signup failed",
+        message: err.response?.data?.message || err.message || message,
       };
     } finally {
       setIsLoading(false);
