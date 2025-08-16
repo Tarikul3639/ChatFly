@@ -23,8 +23,10 @@ import {
   Bell,
   Shield,
   LogOut,
+  Loader2Icon,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { useProfile } from "@/context/ProfileContext";
 
 // Define types
 interface User {
@@ -35,24 +37,30 @@ interface User {
 }
 
 export default function ProfilePage() {
-  const { logout, user, profileUpdate, isLoading } = useAuth();
+  const { logout, user, token } = useAuth();
+
   const [data, setData] = useState({
     username: user?.username || "",
     email: user?.email || "",
     role: "Student",
   });
-  
-  // Handle profile update
+
+  // Profile context provider call
+  const { updateProfile, isLoading } = useProfile();
+  // Update profile
   const handleSaveProfile = async () => {
     if (!user) return;
+    if (data.username.trim() === "" || 
+    data.username.trim() === user.username) return;
 
-    const response = await profileUpdate({
-      id: user.id,
-      username: data.username
-    });
+    const response = await updateProfile(
+      {id: user.id, username: data.username }, 
+      token ?? ""
+    );
 
     if (response.success) {
-      console.log("Profile updated!");
+      setData((prev) => ({ ...prev, username: data.username }));
+      alert("Profile updated successfully!"); 
     } else {
       console.error(response.message);
     }
@@ -89,7 +97,7 @@ export default function ProfilePage() {
         <div className="mb-8">
           <div className="flex items-center space-x-4">
             <Avatar className="w-16 h-16">
-              <AvatarFallback className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white text-xl uppercase font-bold">
+              <AvatarFallback className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white text-2xl uppercase font-semibold">
                 {data?.username?.slice(0, 2) || data?.email?.slice(0, 2) || "U"}
               </AvatarFallback>
             </Avatar>
@@ -171,10 +179,13 @@ export default function ProfilePage() {
                   </div>
                 </div>
                 <Button
+                  variant="default"
                   onClick={handleSaveProfile}
+                  disabled={isLoading}
                   className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700"
                 >
-                  {isLoading ? "Saving..." : "Save Changes"}
+                  {isLoading && <Loader2Icon className="animate-spin" />}
+                  {isLoading ?  "Saving..." : "Save Changes"}
                 </Button>
               </CardContent>
             </Card>

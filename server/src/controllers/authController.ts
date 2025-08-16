@@ -241,7 +241,19 @@ export const profileUpdate = async (req: Request, res: Response) => {
       });
     }
 
-    // Update only specific fields
+    if (username) {
+      const trimmedUsername = username.trim();
+
+      // Check if username is already taken by another user
+      const existingUser = await User.findOne({ username: trimmedUsername, _id: { $ne: id } });
+      if (existingUser) {
+        return res.status(409).json({
+          success: false,
+          message: "Username already taken",
+        });
+      }
+    }
+
     const updateData: Partial<{ username: string }> = {};
     if (username) updateData.username = username.trim();
 
@@ -276,3 +288,4 @@ export const profileUpdate = async (req: Request, res: Response) => {
     });
   }
 };
+

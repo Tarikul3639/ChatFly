@@ -26,21 +26,10 @@ interface AuthContextType {
     username: string
   ) => Promise<{ success: boolean; message: string }>;
   logout: () => void;
-  profileUpdate: (userData: Partial<IUser>) => Promise<{ success: boolean; message: string }>;
   isLoading: boolean;
   isAuthenticated: boolean;
 }
 
-interface IUpdateResponse {
-  success: boolean;
-  message: string;
-  user: {
-    id: string;
-    email: string;
-    username: string;
-    avatar?: string | null;
-  };
-}
 interface IVerifyUser {
   id: string;
   username: string;
@@ -234,49 +223,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
-  // ---------- Update Profile ----------
-const profileUpdate = async (userData: Partial<IUser>) => {
-  try {
-    setIsLoading(true);
-
-    const response = await axios.put<IUpdateResponse>(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/profile`,
-      userData,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-   
-    const data = response.data;
-
-    if (response.status === 200 && data.success) {
-      setUser((prev) =>
-        prev
-          ? {
-              ...prev,
-              username: data.user.username,
-              avatar: data.user.avatar ?? undefined,
-              email: data.user.email ?? prev.email,
-            }
-          : prev
-      );
-      return { success: true, message: data.message };
-    }
-
-    return { success: false, message: data.message };
-  } catch (error: unknown) {
-    return {
-      success: false,
-      message: error instanceof Error ? error.message : "Update failed",
-    };
-  } finally {
-    setIsLoading(false);
-  }
-};
-
-
   // ---------- Logout ----------
   const logout = () => {
     clearAuthData();
@@ -290,7 +236,6 @@ const profileUpdate = async (userData: Partial<IUser>) => {
     login,
     signup,
     logout,
-    profileUpdate,
     isLoading,
     isAuthenticated: !!user,
   };

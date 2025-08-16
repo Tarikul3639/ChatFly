@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import Sidebar from "@/components/Sidebar";
+import { ProfileProvider } from "@/context/ProfileContext";
 
 export default function DashboardLayout({
   children,
@@ -36,7 +37,7 @@ export default function DashboardLayout({
   if (!isAuthenticated) {
     return null;
   }
-  
+
   // Check if current page should hide sidebar on mobile
   const isConversationPage = pathname?.match(/\/(chat|classroom)\/\d+$/);
 
@@ -46,9 +47,9 @@ export default function DashboardLayout({
       {!isConversationPage && (
         <div className="shrink-0">
           <Sidebar />
-        </div>  
+        </div>
       )}
-      
+
       {isConversationPage && (
         <>
           {/* Desktop sidebar for conversation pages */}
@@ -57,10 +58,10 @@ export default function DashboardLayout({
           </div>
         </>
       )}
-      
+
       {/* Main content area */}
       <main className="flex-1 overflow-hidden">
-        {children}
+        <ProfileProvider>{children}</ProfileProvider>
       </main>
     </div>
   );
