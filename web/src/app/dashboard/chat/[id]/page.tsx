@@ -7,6 +7,7 @@ import { Message } from "@/components/message";
 import { ChatHeader } from "@/components/chat";
 import { Chat, Message as MessageType } from "@/types";
 import { chats, sampleMessages } from "../types";
+import Loading from "@/components/ui/loading";
 
 export default function ChatConversationPage() {
   // Router and params
@@ -302,14 +303,7 @@ export default function ChatConversationPage() {
 
   // Render loading state
   if (!selectedChat) {
-    return (
-      <div className="flex items-center justify-center h-[100dvh] w-[100dvw]">
-        <div className="flex flex-col items-center space-y-3">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-          <div className="text-gray-500">Loading chat...</div>
-        </div>
-      </div>
-    );
+    return <Loading />;
   }
 
   // Main render

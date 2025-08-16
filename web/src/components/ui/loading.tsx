@@ -5,7 +5,7 @@ import { ScaleLoader } from "react-spinners";
 
 export default function Loading() {
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 via-white to-violet-50 relative overflow-hidden">
+    <div className="flex items-center justify-center min-h-screen min-w-screen bg-gradient-to-br from-blue-50 via-white to-violet-50 relative overflow-hidden">
       <div className="relative z-10 text-center space-y-5 md:space-y-8">
         {/* Logo with enhanced styling */}
         <div className="flex justify-center">
