@@ -2,11 +2,11 @@ import { User } from './user.types';
 import { Message } from './message.types';
 
 export interface Chat {
-  id: number;
-  name: string;
-  type: string;
-  avatar: string;
-  online: boolean;
+  id?: number;
+  username: string;
+  type?: string;
+  avatar?: string;
+  online?: boolean;
   members?: number;
   lastMessage?: Message;
   unreadCount?: number;

@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { Chat } from "./types";
 import { ChatList, Welcome } from "@/components/chat";
 
 export default function ChatLayout({
@@ -14,15 +13,15 @@ export default function ChatLayout({
   const params = useParams();
   const [selectedChatId, setSelectedChatId] = useState<number | null>(null);
   const user = {
-    id: 1,
+    _id: 1,
     name: "John Doe",
     email: "john.doe@example.com",
     role: "student",
   };
 
   // Handle chat selection
-  const handleChatSelect = (chat: Chat) => {
-    setSelectedChatId(chat.id);
+  const handleChatSelect = (chat: any) => {
+    setSelectedChatId(Number(chat._id));
     router.push(`/dashboard/chat/${chat.id}`);
   };
 
@@ -45,7 +44,7 @@ export default function ChatLayout({
       >
         <ChatList
           onChatSelect={handleChatSelect}
-          selectedChatId={selectedChatId || undefined}
+          selectedChatId={selectedChatId !== null ? String(selectedChatId) : undefined}
         />
       </div>
       {/* Main content area */}

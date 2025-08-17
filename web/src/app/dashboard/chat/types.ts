@@ -1,6 +1,6 @@
 export interface Chat {
   id: number;
-  name: string;
+  username: string;
   type: string;
   avatar: string;
   online: boolean;
@@ -8,9 +8,9 @@ export interface Chat {
 }
 
 export interface ChatWithMessages extends Chat {
-  lastMessage: string;
-  timestamp: string;
-  unread: number;
+  lastMessage?: string;
+  timestamp?: string;
+  unread?: number;
 }
 
 export interface MessageType {
@@ -43,7 +43,7 @@ export interface User {
 export const chats: Chat[] = [
   {
     id: 1,
-    name: "Mathematics 101",
+    username: "Mathematics 101",
     type: "classroom",
     avatar: "M1",
     online: true,
@@ -51,7 +51,7 @@ export const chats: Chat[] = [
   },
   {
     id: 2,
-    name: "Physics Lab",
+    username: "Physics Lab",
     type: "classroom",
     avatar: "PL",
     online: true,
@@ -59,14 +59,14 @@ export const chats: Chat[] = [
   },
   {
     id: 3,
-    name: "Dr. Smith",
+    username: "Dr. Smith",
     type: "direct",
     avatar: "DS",
     online: true,
   },
   {
     id: 4,
-    name: "Study Group",
+    username: "Study Group",
     type: "group",
     avatar: "SG",
     online: false,
@@ -74,7 +74,7 @@ export const chats: Chat[] = [
   },
   {
     id: 5,
-    name: "Computer Science",
+    username: "Computer Science",
     type: "classroom",
     avatar: "CS",
     online: true,
@@ -86,7 +86,7 @@ export const chats: Chat[] = [
 export const chatsWithMessages: ChatWithMessages[] = [
   {
     id: 1,
-    name: "Mathematics 101",
+    username: "Mathematics 101",
     type: "classroom",
     lastMessage: "Dr. Smith: Great question about derivatives!",
     timestamp: "2 min",
@@ -97,7 +97,7 @@ export const chatsWithMessages: ChatWithMessages[] = [
   },
   {
     id: 2,
-    name: "Physics Lab",
+    username: "Physics Lab",
     type: "classroom",
     lastMessage: "Remember to submit your lab reports",
     timestamp: "1h",
@@ -108,7 +108,7 @@ export const chatsWithMessages: ChatWithMessages[] = [
   },
   {
     id: 3,
-    name: "Dr. Smith",
+    username: "Dr. Smith",
     type: "direct",
     lastMessage: "Thank you for the great presentation!",
     timestamp: "3h",
@@ -118,7 +118,7 @@ export const chatsWithMessages: ChatWithMessages[] = [
   },
   {
     id: 4,
-    name: "Study Group",
+    username: "Study Group",
     type: "group",
     lastMessage: "See you all tomorrow for the review session",
     timestamp: "1d",
@@ -129,7 +129,7 @@ export const chatsWithMessages: ChatWithMessages[] = [
   },
   {
     id: 5,
-    name: "Computer Science",
+    username: "Computer Science",
     type: "classroom",
     lastMessage: "Next week we'll cover algorithms",
     timestamp: "2d",
@@ -140,7 +140,7 @@ export const chatsWithMessages: ChatWithMessages[] = [
   },
   {
     id: 6,
-    name: "Group Project",
+    username: "Group Project",
     type: "group",
     lastMessage: "Let's finalize the presentation slides",
     timestamp: "2d",
@@ -151,7 +151,7 @@ export const chatsWithMessages: ChatWithMessages[] = [
   },
   {
     id: 7,
-    name: "History Discussion",
+    username: "History Discussion",
     type: "classroom",
     lastMessage: "Discussion on World War II",
     timestamp: "3d",
@@ -162,7 +162,7 @@ export const chatsWithMessages: ChatWithMessages[] = [
   },
   {
     id: 8,
-    name: "Chemistry Club",
+    username: "Chemistry Club",
     type: "group",
     lastMessage: "Next meeting on Friday",
     timestamp: "4d",
@@ -173,7 +173,7 @@ export const chatsWithMessages: ChatWithMessages[] = [
   },
   {
     id: 9,
-    name: "Art Appreciation",
+    username: "Art Appreciation",
     type: "classroom",
     lastMessage: "Don't forget to submit your art projects",
     timestamp: "5d",
@@ -184,7 +184,7 @@ export const chatsWithMessages: ChatWithMessages[] = [
   },
   {
     id: 10,
-    name: "Music Theory",
+    username: "Music Theory",
     type: "classroom",
     lastMessage: "Practice your scales for next class",
     timestamp: "6d",
@@ -195,7 +195,7 @@ export const chatsWithMessages: ChatWithMessages[] = [
   },
   {
     id: 11,
-    name: "Philosophy Debate",
+    username: "Philosophy Debate",
     type: "group",
     lastMessage: "Interesting points raised in the last debate",
     timestamp: "7d",

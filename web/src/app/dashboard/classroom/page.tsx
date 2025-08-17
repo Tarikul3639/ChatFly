@@ -235,7 +235,7 @@ export default function DashboardPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Link href="/classroom/create-classroom">
+                  <Link href="/dashboard/classroom/create-classroom">
                     <Button
                       variant="secondary"
                       className="bg-white text-blue-600 hover:bg-gray-100"

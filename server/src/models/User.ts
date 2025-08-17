@@ -6,6 +6,7 @@ export interface IUser extends Document {
   email: string;
   password: string;
   avatar?: string;
+  isOnline?: boolean;
   status: "online" | "offline" | "away";
   bio?: string;
   friends: mongoose.Types.ObjectId[];
@@ -17,55 +18,18 @@ export interface IUser extends Document {
 
 const UserSchema: Schema<IUser> = new Schema(
   {
-    username: {
-      type: String,
-      required: true,
-      unique: true,
-      trim: true,
-    },
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-      lowercase: true,
-      trim: true,
-    },
-    password: {
-      type: String,
-      required: true,
-      minlength: 6,
-      select: false, // Don't return password by default
-    },
-    avatar: {
-      type: String, // Could be a URL (Cloudinary/Cloudflare)
-      default: "",
-    },
-    status: {
-      type: String,
-      enum: ["online", "offline", "away"],
-      default: "offline",
-    },
-    bio: {
-      type: String,
-      maxLength: 150,
-    },
-    friends: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-      },
-    ],
-    blockedUsers: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-      },
-    ],
-    lastSeen: {
-      type: Date,
-    },
+    username: { type: String, required: true, unique: true, trim: true },
+    email: { type: String, required: true, unique: true, lowercase: true, trim: true },
+    password: { type: String, required: true, minlength: 6, select: false },
+    avatar: { type: String, default: "C" },
+    isOnline: { type: Boolean, default: false },
+    status: { type: String, enum: ["online", "offline", "away"], default: "offline" },
+    bio: { type: String, maxLength: 150 },
+    friends: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    blockedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    lastSeen: { type: Date },
   },
-  { timestamps: true } // createdAt & updatedAt automatically added
+  { timestamps: true }
 );
 
 // Index for searching by username or email
