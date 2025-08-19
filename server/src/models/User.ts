@@ -6,7 +6,6 @@ export interface IUser extends Document {
   email: string;
   password: string;
   avatar?: string;
-  isOnline?: boolean;
   status: "online" | "offline" | "away";
   bio?: string;
   friends: mongoose.Types.ObjectId[];
@@ -22,7 +21,6 @@ const UserSchema: Schema<IUser> = new Schema(
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
     password: { type: String, required: true, minlength: 6, select: false },
     avatar: { type: String, default: "C" },
-    isOnline: { type: Boolean, default: false },
     status: { type: String, enum: ["online", "offline", "away"], default: "offline" },
     bio: { type: String, maxLength: 150 },
     friends: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],

@@ -5,9 +5,9 @@ import { useRouter, useParams } from "next/navigation";
 import { MessageInput, ReplyPreview, EditPreview } from "@/components/input";
 import { Message } from "@/components/message";
 import { ChatHeader } from "@/components/chat";
-import { Chat, Message as MessageType } from "@/types";
-import { chats, sampleMessages } from "../types";
+import { Message as MessageType, ChatFriend } from "@/types";
 import Loading from "@/components/ui/loading";
+import { useSocket } from "@/context/SocketContext";
 
 export default function ChatConversationPage() {
   // Router and params
@@ -15,8 +15,8 @@ export default function ChatConversationPage() {
   const params = useParams();
 
   // State for chat data
-  const [selectedChat, setSelectedChat] = useState<Chat | null>(null);
-  const [messages, setMessages] = useState<MessageType[]>(sampleMessages);
+  const [selectedChat, setSelectedChat] = useState<ChatFriend | null>(null);
+  const [messages, setMessages] = useState<MessageType[]>([]);
 
   // State for scroll behavior
   const [isAtBottom, setIsAtBottom] = useState(true);
@@ -27,10 +27,15 @@ export default function ChatConversationPage() {
   const [attachments, setAttachments] = useState<File[]>([]);
   const [voice, setVoice] = useState<Blob | null>(null);
   const [isRecording, setIsRecording] = useState(false);
+  const currentUserId = JSON.parse(
+    localStorage.getItem("chatfly-user") || "{}"
+  ).id;
 
   // State for message interactions
   const [replyingTo, setReplyingTo] = useState<MessageType | null>(null);
-  const [editingMessage, setEditingMessage] = useState<MessageType | null>(null);
+  const [editingMessage, setEditingMessage] = useState<MessageType | null>(
+    null
+  );
 
   // State for AI features
   const [showAISuggestions, setShowAISuggestions] = useState(false);
@@ -39,6 +44,8 @@ export default function ChatConversationPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null!);
   const messagesContainerRef = useRef<HTMLDivElement>(null!);
   const textareaRef = useRef<HTMLTextAreaElement>(null!);
+  //  Socket context
+  const { socket } = useSocket();
 
   // Constants
   const aiSuggestions = [
@@ -47,20 +54,18 @@ export default function ChatConversationPage() {
     "Could you elaborate on that concept a bit more?",
   ];
 
-  // Navigation functions
-  const handleBackToList = () => {
-    router.push("/dashboard/chat");
-  };
-
   // Scroll utility functions
-  const scrollToBottom = useCallback((force = false, smooth = true) => {
-    if (force || isAtBottom) {
-      messagesEndRef.current?.scrollIntoView({
-        behavior: smooth ? "smooth" : "auto",
-        block: "end",
-      });
-    }
-  }, [isAtBottom]);
+  const scrollToBottom = useCallback(
+    (force = false, smooth = true) => {
+      if (force || isAtBottom) {
+        messagesEndRef.current?.scrollIntoView({
+          behavior: smooth ? "smooth" : "auto",
+          block: "end",
+        });
+      }
+    },
+    [isAtBottom]
+  );
 
   const checkIfAtBottom = useCallback(() => {
     const container = messagesContainerRef.current;
@@ -83,62 +88,6 @@ export default function ChatConversationPage() {
   const handleScrollToNewMessages = () => {
     scrollToBottom(true);
     setNewMessageCount(0);
-  };
-
-  // Message handling functions
-  const handleSendMessage = () => {
-    if (!message.trim() && attachments.length === 0 && !voice) return;
-
-    const currentTime = new Date().toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    });
-
-    if (editingMessage) {
-      // Update existing message
-      setMessages(
-        messages.map((msg) =>
-          msg.id === editingMessage.id
-            ? { ...msg, content: message.trim(), isEdited: true }
-            : msg
-        )
-      );
-      setEditingMessage(null);
-      // Don't force scroll for edits, maintain position
-    } else {
-      // Create new message
-      const allAttachments = [...attachments];
-      if (voice) {
-        const voiceFile = new File([voice], `voice-${Date.now()}.webm`, {
-          type: voice.type || 'audio/webm'
-        });
-        allAttachments.push(voiceFile);
-      }
-
-      const newMessage = {
-        id: messages.length + 1,
-        sender: "You",
-        content: message,
-        timestamp: currentTime,
-        avatar: "YU",
-        isOwn: true,
-        replyTo: replyingTo || undefined,
-        attachments: allAttachments.length > 0 ? allAttachments : undefined,
-        role: "student",
-      };
-      setMessages([...messages, newMessage]);
-
-      // For own messages, always scroll to bottom immediately
-      setTimeout(() => scrollToBottom(true, false), 0);
-    }
-
-    setMessage("");
-    setIsRecording(false);
-    setAttachments([]);
-    setVoice(null);
-    setReplyingTo(null);
-    textareaRef?.current?.focus();
   };
 
   const handleDeleteMessage = (messageId: number) => {
@@ -244,19 +193,6 @@ export default function ChatConversationPage() {
   };
 
   // useEffect hooks
-  // Find and set selected chat based on URL parameter
-  useEffect(() => {
-    if (params?.id) {
-      const chatId = Number(params.id);
-      const foundChat = chats.find((c) => c.id === chatId);
-      if (foundChat) {
-        setSelectedChat(foundChat);
-      } else {
-        // If chat not found, redirect to chat list
-        router.push("/dashboard/chat");
-      }
-    }
-  }, [params?.id, router]);
 
   // Initial scroll to bottom when chat loads
   useEffect(() => {
@@ -301,6 +237,155 @@ export default function ChatConversationPage() {
     return () => container.removeEventListener("scroll", handleScroll);
   }, [checkIfAtBottom]);
 
+  const handleSendMessage = () => {
+    if (!message.trim() && attachments.length === 0 && !voice) return;
+
+    if (editingMessage) {
+      // Update existing message
+      setMessages(
+        messages.map((msg) =>
+          msg.id === editingMessage.id
+            ? { ...msg, content: message.trim(), isEdited: true }
+            : msg
+        )
+      );
+      setEditingMessage(null);
+    } else {
+      // Prepare attachments
+      const allAttachments = [...attachments];
+      if (voice) {
+        const voiceFile = new File([voice], `voice-${Date.now()}.webm`, {
+          type: voice.type || "audio/webm",
+        });
+        allAttachments.push(voiceFile);
+      }
+
+      const senderId = JSON.parse(
+        localStorage.getItem("chatfly-user") || "{}"
+      ).id;
+
+      // Emit message to server
+      socket?.emit("sendMessage", {
+        senderId,
+        receiverId: params.id,
+        text: message,
+        attachments: allAttachments.length > 0 ? allAttachments : undefined,
+        replyTo: replyingTo?.id || null,
+        timestamp: new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true,
+          }),
+      });
+    }
+
+    // Reset
+    setMessage("");
+    setIsRecording(false);
+    setAttachments([]);
+    setVoice(null);
+    setReplyingTo(null);
+    textareaRef?.current?.focus();
+  };
+
+  // 2) single newMessage listener (useEffect)
+  useEffect(() => {
+    if (!socket) return;
+
+    const onNewMessage = (data: any) => {
+      const msg = data.message;
+
+      setMessages((prevMessages) => {
+        // If message already exists, avoid duplicate
+        if (prevMessages.some((m) => m.id === msg._id)) return prevMessages;
+
+        const newMessage = {
+          id: msg._id,
+          sender: msg.sender._id,
+          content: msg.content,
+          timestamp: new Date(msg.createdAt).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true,
+          }),
+          avatar: msg.sender.avatar,
+          isOwn: msg.sender._id === currentUserId,
+          attachments: msg.attachments || [],
+          replyTo: msg.replyTo || undefined,
+          role: "student",
+          isPinned: msg.isPinned,
+        };
+
+        return [...prevMessages, newMessage];
+      });
+
+      // auto-scroll if at bottom
+      if (isAtBottom) setTimeout(() => scrollToBottom(true, false), 30);
+    };
+
+    socket.on("newMessage", onNewMessage);
+    return () => {
+      socket.off("newMessage", onNewMessage);
+    };
+  }, [socket, currentUserId, isAtBottom, scrollToBottom]);
+
+  // replace your existing socket-useEffect with this block
+  // --- SOCKET: join/create conversation & load messages (robust) ---
+  useEffect(() => {
+    if (!socket || !params?.id) return;
+
+    const currentUserId = JSON.parse(
+      localStorage.getItem("chatfly-user") || "{}"
+    ).id;
+    const friendId = params.id;
+
+    // Listener আগে বসানো
+    const handleConversationFound = (friend: ChatFriend) => {
+      console.log(friend);
+      setSelectedChat({
+        _id: friend._id,
+        username: friend.username,
+        avatar: friend.avatar,
+        status: friend.status,
+      });
+      setMessages([]);
+      scrollToBottom(true, false);
+    };
+
+    socket.on("conversationNotFound", handleConversationFound);
+    socket.on("conversationFound", (data) => {
+      console.log("Conversation found:", data);
+      setSelectedChat({
+        _id: data.conversation._id,
+        username: data.conversation.username,
+        avatar: data.conversation.avatar,
+        status: data.conversation.status,
+      });
+      setMessages(
+        data.messages.map((msg: any) => ({
+          id: msg._id,
+          isOwn: msg.sender._id === currentUserId,
+          content: msg.content,
+          timestamp: new Date(msg.createdAt).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true,
+          }),
+          isPinned: msg.isPinned,
+        }))
+      );
+      scrollToBottom(true, false);
+    });
+
+    // Emit পরে
+    socket.emit("getConversation", { currentUserId, friendId });
+
+    // Cleanup
+    return () => {
+      socket.off("conversationFound", handleConversationFound);
+    };
+  }, [socket, params?.id]);
+
   // Render loading state
   if (!selectedChat) {
     return <Loading />;
@@ -310,7 +395,7 @@ export default function ChatConversationPage() {
   return (
     <div className="flex h-[calc(100dvh)] flex-col w-full z-50 bg-white">
       {/* Chat Header */}
-      <ChatHeader selectedChat={selectedChat} onBack={handleBackToList} />
+      <ChatHeader selectedChat={selectedChat} />
 
       {/* Messages */}
       <div className="flex-1 overflow-auto">

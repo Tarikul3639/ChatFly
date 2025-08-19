@@ -1,58 +1,42 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { ChatList, Welcome } from "@/components/chat";
 
-export default function ChatLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function ChatLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const params = useParams();
-  const [selectedChatId, setSelectedChatId] = useState<number | null>(null);
-  const user = {
-    _id: 1,
-    name: "John Doe",
-    email: "john.doe@example.com",
-    role: "student",
-  };
+  const pathname = usePathname();
+  const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
+  const [user, setUser] = useState<{ username: string } | null>(null);
 
-  // Handle chat selection
-  const handleChatSelect = (chat: any) => {
-    setSelectedChatId(Number(chat._id));
-    router.push(`/dashboard/chat/${chat.id}`);
-  };
-
-  // Update selected chat when URL changes
+  // client-side localStorage fetch
   useEffect(() => {
-    if (params?.id) {
-      setSelectedChatId(Number(params.id));
-    } else {
-      setSelectedChatId(null);
-    }
-  }, [params?.id]);
+    const storedUser = localStorage.getItem("chatfly-user");
+    if (storedUser) setUser(JSON.parse(storedUser));
+  }, []);
+
+  // 🔹 route change detect
+  useEffect(() => {
+    console.log("Layout route changed:", pathname);
+  }, [pathname]);
+
+  const handleChatSelect = (chat: any) => {
+    setSelectedChatId(chat._id);
+    router.push(`/dashboard/chat/${chat._id}`);
+  };
 
   return (
     <div className="flex overflow-hidden">
-      {/* Chat List Sidebar - Always visible on desktop, conditional on mobile */}
-      <div
-        className={`${
-          selectedChatId ? "hidden md:block sm:w-80" : "block w-full sm:w-80"
-        } border-r border-gray-200`}
-      >
-        <ChatList
-          onChatSelect={handleChatSelect}
-          selectedChatId={selectedChatId !== null ? String(selectedChatId) : undefined}
-        />
+      <div className={`${selectedChatId ? "hidden md:block sm:w-80" : "block w-full sm:w-80"} border-r border-gray-200`}>
+        <ChatList onChatSelect={handleChatSelect} selectedChatId={selectedChatId || undefined} />
       </div>
-      {/* Main content area */}
+
       {selectedChatId ? (
         children
       ) : (
         <div className="hidden sm:flex w-full flex items-center justify-center">
-          <Welcome userName={user.name} />
+          {user && <Welcome userName={user.username} />}
         </div>
       )}
     </div>

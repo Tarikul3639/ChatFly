@@ -2,11 +2,13 @@ import { User } from './user.types';
 import { Message } from './message.types';
 
 export interface Chat {
+  conversationId: any;
+  _id: any;
   id?: number;
   username: string;
   type?: string;
   avatar?: string;
-  online?: boolean;
+  status?: string;
   members?: number;
   lastMessage?: Message;
   unreadCount?: number;
@@ -14,8 +16,7 @@ export interface Chat {
 }
 
 export interface ChatHeaderProps {
-  selectedChat: Chat;
-  onBack: () => void;
+  selectedChat: ChatFriend;
 }
 
 export interface ChatListProps {
@@ -30,4 +31,14 @@ export interface ChatState {
   messages: Message[];
   loading: boolean;
   error?: string;
+}
+
+export interface ChatFriend {
+  _id: string;
+  username: string;
+  avatar: string;
+  status: string;
+  type?: string;
+  lastMessage?: Message;
+  participants?: User[];
 }

@@ -4,8 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ArrowLeft, Phone, Video, MoreHorizontal } from "lucide-react";
 import { ChatHeaderProps } from "@/types/chat.types";
+import { useRouter } from "next/navigation";
 
-export default function ChatHeader({ selectedChat, onBack }: ChatHeaderProps) {
+export default function ChatHeader({ selectedChat }: ChatHeaderProps) {
+  const router = useRouter();
+
   return (
     <div className="bg-white border-b border-gray-200 md:px-6 py-4">
       <div className="flex items-center justify-between">
@@ -15,7 +18,7 @@ export default function ChatHeader({ selectedChat, onBack }: ChatHeaderProps) {
             size="icon"
             variant="ghost"
             className="md:hidden"
-            onClick={onBack}
+            onClick={() => router.push("/dashboard/chat")}
           >
             <ArrowLeft className="w-5 h-5" />
           </Button>
@@ -34,13 +37,13 @@ export default function ChatHeader({ selectedChat, onBack }: ChatHeaderProps) {
             </AvatarFallback>
           </Avatar>
           <div>
-            <h3 className="font-semibold text-gray-900">{selectedChat.name}</h3>
+            <h3 className="font-semibold text-gray-900">{selectedChat.username}</h3>
             <div className="flex flex-col md:flex-row text-xs text-gray-500">
               <span className="md:mr-2">
-                {selectedChat.members && ` ${selectedChat.members} members`}
+                {selectedChat.participants && ` ${selectedChat.participants.length} members`}
               </span>
               <span className="font-medium">
-                {selectedChat.online ? (
+                {selectedChat.status === "online" ? (
                   <span className="text-green-500">Active now</span>
                 ) : (
                   "Last seen 2h ago"
